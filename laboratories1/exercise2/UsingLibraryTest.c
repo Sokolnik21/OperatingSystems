@@ -14,12 +14,29 @@ char * createBlock(int blockSize);
 typedef enum {
   CREATE_TABLE,
   DELETE_TABLE,
-  FIND_ELEMENT,
   ADD_BLOCK,
-  DELETE_BLOCK
+  DELETE_BLOCK,
+  FIND_ELEMENT
 }
 operationsStrategy;
 
+/**
+ * Operation standarise
+ */
+char ** createTable(allocationStrategy strategy, int cellsQuantity);
+void deleteTable(allocationStrategy strategy, char ** table, int cellsQuantity);
+
+int addBlockToTable(allocationStrategy strategy, char ** table,
+  int cellsQuantity, char * block, int cell);
+int removeBlockFromTable(allocationStrategy strategy, char ** table,
+  int cellsQuantity, int cell);
+
+char * findBlockWithSpecifiedQuantityInTable(allocationStrategy strategy,
+  char ** table, int cellsQuantity, int quantity);
+
+/**
+ * Parsing functions
+ */
 int parseAllocationType(allocationStrategy * strategy, char * arg);
 int parseOperationsStrategy(operationsStrategy ** listOfOperations, char * arg);
 
@@ -47,18 +64,68 @@ int main(int argc, char * argv[]) {
   srand(time(NULL));
 
 
-  allocationStrategy x = allocationType;
-  char * tmp;
-  tmp = createBlock(blockSize);
-  printf("%s\n", tmp);
-  free(tmp);
+  // allocationStrategy x = allocationType;
+  // char * tmp;
+  // tmp = createBlock(blockSize);
+  // printf("%s\n", tmp);
+  // free(tmp);
+  //
+  // char ** table = createTable(allocationType, numberOfElements);
+  //
+  // operationsStrategy * dupa;
+  // int variable = parseOperationsStrategy(&dupa, listOfOperations);
+  // printf("%d\n", variable);
 
-  operationsStrategy * dupa;
-  int variable = parseOperationsStrategy(&dupa, listOfOperations);
-  printf("%d\n", variable);
+  /* Dynamic test */
+  char ** a = createTable(allocationType, 5);
+  addBlockToTable(allocationType, a, 5, createBlock(blockSize), 0);
+  addBlockToTable(allocationType, a, 5, "Jagalat", 3);
+  // removeBlockFromTable(a, 5, 0);
+  char * b = findBlockWithSpecifiedQuantityInTable(allocationType, a, 5, 7);
+  printf("%s\n", a[0]);
+  printf("%s\n", b);
 
   return 0;
 }
+
+// int main() {
+//   /* Static test */
+//   initializeStaticTable();
+//   addBlockToStaticTable("Jaganala", 0);
+//   int stringSize = getStringSize(staticTable[0]);
+//   printf("%d\n", stringSize);
+//   char * w = findBlockWithSpecifiedQuantityInStaticTable(7);
+//   printf("w: %s\n", w);
+//
+//   // removeBlockFromStaticTable(0);
+//   printf("%s\n", staticTable[0]);
+//
+//   /* Dynamic test */
+//   char ** a = createDynamicTable(5);
+//   addBlockToDynamicTable(a, 5, "Jaga", 0);
+//   addBlockToDynamicTable(a, 5, "Jagalat", 3);
+//   // removeBlockFromTable(a, 5, 0);
+//   char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
+//   printf("%s\n", a[0]);
+//   printf("%s\n", b);
+//   // a[0] = malloc(sizeof(char) * 4);
+//   // a[0][0] = 'a';
+//   // a[0][1] = 'c';
+//   // a[0][2] = 'b';
+//   // a[0][3] = 'l';
+//   // a[0][4] = 'm';
+//   // a[0][5] = 'q';
+//   // printf("\n%d\n", getStringSize(a[0]));
+//   // // a[0] = "asdfas\n"; !!! NIEDOPUSZCZALNE !!!
+//   // printf("\n%c\n", a[0][5]);
+//   // // free(a[0]);
+//   // // "asdfa\n";
+//   //
+//   // printf("%s", a[1]);
+//   // // free(a[0]);
+//   deleteDynamicTable(a, 5);
+//   return 0;
+// }
 
 char * createBlock(int blockSize) {
   /* Allocating space for string */
@@ -76,6 +143,54 @@ char * createBlock(int blockSize) {
   return result;
 }
 
+/**
+ * Operation standarise
+ */
+char ** createTable(allocationStrategy strategy, int cellsQuantity) {
+  switch (strategy) {
+    case STATIC:  initializeStaticTable();
+                  return NULL;
+    case DYNAMIC: return createDynamicTable(cellsQuantity);
+  }
+}
+
+void deleteTable(allocationStrategy strategy, char ** table, int cellsQuantity) {
+  switch (strategy) {
+    case STATIC:  initializeStaticTable();
+    case DYNAMIC: deleteDynamicTable(table, cellsQuantity);
+  }
+}
+
+int addBlockToTable(allocationStrategy strategy, char ** table,
+  int cellsQuantity, char * block, int cell) {
+
+  switch (strategy) {
+    case STATIC:  return addBlockToStaticTable(block, cell);
+    case DYNAMIC: return addBlockToDynamicTable(table, cellsQuantity, block, cell);
+  }
+}
+
+int removeBlockFromTable(allocationStrategy strategy, char ** table,
+  int cellsQuantity, int cell) {
+
+  switch (strategy) {
+    case STATIC:  return removeBlockFromStaticTable(cell);
+    case DYNAMIC: return removeBlockFromDynamicTable(table, cellsQuantity, cell);
+  }
+}
+
+char * findBlockWithSpecifiedQuantityInTable(allocationStrategy strategy,
+  char ** table, int cellsQuantity, int quantity) {
+
+  switch (strategy) {
+    case STATIC:  return findBlockWithSpecifiedQuantityInStaticTable(quantity);
+    case DYNAMIC: return findBlockWithSpecifiedQuantityInDynamicTable(table, cellsQuantity, quantity);
+  }
+}
+
+/**
+ * Parsing functions
+ */
 int parseAllocationType(allocationStrategy * strategy, char * arg) {
   switch(arg[0]) {
     case 'd': * strategy = DYNAMIC;
@@ -89,13 +204,14 @@ int parseAllocationType(allocationStrategy * strategy, char * arg) {
 }
 
 int parseOperationsStrategy(operationsStrategy ** listOfOperations, char * arg) {
-  /* Setting size of the list */
+  /* Allocating space for operations queue */
   int i = 0;
   while (arg[i] != '\0') {
     printf("a\n");
     i++;
   }
 
+  /* Filling queue with operations */
   i = 0;
   while (arg[i] != '\0') {
     switch(arg[i]) {

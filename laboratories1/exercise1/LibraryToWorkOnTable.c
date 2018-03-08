@@ -23,6 +23,9 @@ void initializeStaticTable() {
 
 int addBlockToStaticTable(char * block, int cell) {
   if(cell > MAX_STATIC_TABLE_SIZE - 1 || cell < 0) return -1;
+
+  /* Clear table before add */
+  removeBlockFromStaticTable(cell);
   int charCounter = getStringSize(block);
   int i;
   for(i = 0; i < charCounter; i++)
