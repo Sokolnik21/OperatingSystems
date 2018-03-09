@@ -139,16 +139,16 @@ char * findBlockWithSpecifiedQuantityInDynamicTable(char ** table, int cellsQuan
 }
 
 // int main() {
-//   /* Dynamic test */
-//   char ** a = createDynamicTable(5);
-//   addBlockToDynamicTable(a, 5, "Jaga", 0);
-//   addBlockToDynamicTable(a, 5, "Jagalat", 0);
-//   char * f = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 42);
-//   printf("%s\n", f);
-//   // removeBlockFromDynamicTable(a, 5, 0);
-//   char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
-//   // printf("%s\n", a[0]);
-//   printf("%s\n", b);
+//   // /* Dynamic test */
+//   // char ** a = createDynamicTable(5);
+//   // addBlockToDynamicTable(a, 5, "Jaga", 0);
+//   // addBlockToDynamicTable(a, 5, "Jagalat", 0);
+//   // char * f = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 42);
+//   // printf("%s\n", f);
+//   // // removeBlockFromDynamicTable(a, 5, 0);
+//   // char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
+//   // // printf("%s\n", a[0]);
+//   // printf("%s\n", b);
 //
 //   /* Static test */
 //   initializeStaticTable();

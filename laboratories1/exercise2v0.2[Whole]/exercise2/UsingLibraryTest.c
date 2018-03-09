@@ -32,15 +32,7 @@ char * findBlockWithSpecifiedQuantityInTable(allocationStrategy strategy,
  * Parsing functions
  */
 int parseAllocationType(allocationStrategy * strategy, char * arg);
-int parseOperationsStrategy(int numberOfElements, char * typeOfOperations, int * quantityOfOperations, char * arg);
-
-/**
- * Testing functions
- */
-double getTimeCreateTable(clockid_t clk_id, int numberOfElementsInTest, int blockSizeInTest);
-double getTimeFindElement(clockid_t clk_id, char ** testTable, int numberOfElementsInTest);
-double getTimeDeleteHalfAddHalf(clockid_t clk_id, char ** testTable, int numberOfElementsInTest, int blockSizeInTest);
-double getTimeReplaceHalf(clockid_t clk_id, char ** testTable, int numberOfElementsInTest, int blockSizeInTest);
+int parseOperationsStrategy(int blockSize, char * typeOfOperations, int * quantityOfOperations, char * arg);
 
 /**
  * Main function
@@ -64,7 +56,7 @@ int main(int argc, char * argv[]) {
   blockSize = atoi(argv[2]);
   if(parseAllocationType(&allocationType, argv[3]) == -1)
     return -2;
-  if(parseOperationsStrategy(numberOfElements, typeOfOperations, quantityOfOperations, argv[4]) == -1)
+  if(parseOperationsStrategy(blockSize, typeOfOperations, quantityOfOperations, argv[4]) == -1)
     return -3;
 
   /* Setting dependation for random number generator */
@@ -151,59 +143,73 @@ int main(int argc, char * argv[]) {
   long long seconds;
   long long nanoseconds;
   double timeDifference;
-  int i;  // Iterator used to iterate table
+  int i;  // Iterator used to go through table
+  // clockid_t clk_id = CLOCK_REALTIME;
 
-  printf("\nExecution times for dynamic table with parameters:\n");
-  printf("numberOfBlocks - %d, blockSize - %d\n\n", numberOfElementsInTest, blockSizeInTest);
+  printf("\nExecution times for dynamic table:\n");
+  printf("////Parameters: numberOfBlocks - %d, blockSize - %d\n", numberOfElementsInTest, blockSizeInTest);
 
   printf("Create table and fill it with data:\n");
   /* REAL TIME */
-  timeDifference = getTimeCreateTable(CLOCK_REALTIME, numberOfElementsInTest, blockSizeInTest);
-  printf("\tREAL: %f sec\n", timeDifference);
-  /* USER TIME */
-  timeDifference = getTimeCreateTable(CLOCK_MONOTONIC, numberOfElementsInTest, blockSizeInTest);
-  printf("\tUSER: %f sec\n", timeDifference);
-  /* SYSTEM TIME */
-  timeDifference = getTimeCreateTable(CLOCK_PROCESS_CPUTIME_ID, numberOfElementsInTest, blockSizeInTest);
-  printf("\tSYST: %f sec\n", timeDifference);
-
-  /* Setting table */
+  clock_gettime(CLOCK_REALTIME, &timeStart);
   testTable = createDynamicTable(numberOfElementsInTest);
   for(i = 0; i < numberOfElementsInTest; i++)
     addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
+  clock_gettime(CLOCK_REALTIME, &timeEnd);
+  timeDifference = (timeEnd.tv_sec - timeStart.tv_sec)
+  + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
+  printf("\tREAL: %lf sec\n", timeDifference);
+  /* USER TIME */
+  clock_gettime(CLOCK_MONOTONIC, &timeStart);
+  testTable = createDynamicTable(numberOfElementsInTest);
+  for(i = 0; i < numberOfElementsInTest; i++)
+    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
+  clock_gettime(CLOCK_MONOTONIC, &timeEnd);
+  timeDifference = (timeEnd.tv_sec - timeStart.tv_sec)
+  + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
+  printf("\tUSER: %lf sec\n", timeDifference);
+  /* SYSTEM TIME */
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID , &timeStart);
+  testTable = createDynamicTable(numberOfElementsInTest);
+  for(i = 0; i < numberOfElementsInTest; i++)
+    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID , &timeEnd);
+  timeDifference = (timeEnd.tv_sec - timeStart.tv_sec)
+  + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
+  printf("\tSYST: %lf sec\n", timeDifference);
 
   printf("Find element:\n");
   /* REAL TIME */
-  timeDifference = getTimeFindElement(CLOCK_REALTIME, testTable, numberOfElementsInTest);
-  printf("\tREAL: %f sec\n", timeDifference);
-  /* USER TIME */
-  timeDifference = getTimeFindElement(CLOCK_MONOTONIC, testTable, numberOfElementsInTest);
-  printf("\tUSER: %f sec\n", timeDifference);
-  /* SYSTEM TIME */
-  timeDifference = getTimeFindElement(CLOCK_PROCESS_CPUTIME_ID, testTable, numberOfElementsInTest);
-  printf("\tSYST: %f sec\n", timeDifference);
+  clock_gettime(CLOCK_REALTIME, &timeStart);
+  findBlockWithSpecifiedQuantityInDynamicTable(testTable, numberOfElementsInTest, 0);
+  clock_gettime(CLOCK_REALTIME, &timeEnd);
+  timeDifference = (timeEnd.tv_sec - timeStart.tv_sec)
+  + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
+  printf("\tREAL: %lf sec\n", timeDifference);
 
   printf("Delete half blocks and then add half blocks:\n");
   /* REAL TIME */
-  timeDifference = getTimeDeleteHalfAddHalf(CLOCK_REALTIME, testTable, numberOfElementsInTest, blockSizeInTest);
-  printf("\tREAL: %f sec\n", timeDifference);
-  /* USER TIME */
-  timeDifference = getTimeDeleteHalfAddHalf(CLOCK_MONOTONIC, testTable, numberOfElementsInTest, blockSizeInTest);
-  printf("\tUSER: %f sec\n", timeDifference);
-  /* SYSTEM TIME */
-  timeDifference = getTimeDeleteHalfAddHalf(CLOCK_PROCESS_CPUTIME_ID, testTable, numberOfElementsInTest, blockSizeInTest);
-  printf("\tSYST: %f sec\n", timeDifference);
+  clock_gettime(CLOCK_REALTIME, &timeStart);
+  for(i = 0; i < numberOfElementsInTest / 2; i++)
+    removeBlockFromDynamicTable(testTable, numberOfElementsInTest, i);
+  for(i = 0; i < numberOfElementsInTest / 2; i++)
+    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
+  clock_gettime(CLOCK_REALTIME, &timeEnd);
+  timeDifference = (timeEnd.tv_sec - timeStart.tv_sec)
+  + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
+  printf("\tREAL: %lf sec\n", timeDifference);
 
   printf("Replace half blocks\n");
   /* REAL TIME */
-  timeDifference = getTimeReplaceHalf(CLOCK_REALTIME, testTable, numberOfElementsInTest, blockSizeInTest);
-  printf("\tREAL: %f sec\n", timeDifference);
-  /* USER TIME */
-  timeDifference = getTimeReplaceHalf(CLOCK_MONOTONIC, testTable, numberOfElementsInTest, blockSizeInTest);
-  printf("\tUSER: %f sec\n", timeDifference);
-  /* SYSTEM TIME */
-  timeDifference = getTimeReplaceHalf(CLOCK_PROCESS_CPUTIME_ID, testTable, numberOfElementsInTest, blockSizeInTest);
-  printf("\tSYST: %f sec\n", timeDifference);
+  clock_gettime(CLOCK_REALTIME, &timeStart);
+  for(i = 0; i < numberOfElementsInTest / 2; i++) {
+    removeBlockFromDynamicTable(testTable, numberOfElementsInTest, i);
+    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
+  }
+  clock_gettime(CLOCK_REALTIME, &timeEnd);
+  timeDifference = (timeEnd.tv_sec - timeStart.tv_sec)
+  + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
+  printf("\tREAL: %lf sec\n", timeDifference);
 
   return 0;
 }
@@ -304,7 +310,7 @@ int parseAllocationType(allocationStrategy * strategy, char * arg) {
   }
 }
 
-int parseOperationsStrategy(int numberOfElements, char * typeOfOperations, int * quantityOfOperations, char * arg) {
+int parseOperationsStrategy(int blockSize, char * typeOfOperations, int * quantityOfOperations, char * arg) {
   /* Setting variables */
   char op1, op2, op3;
   int qan1, qan2, qan3;
@@ -322,70 +328,11 @@ int parseOperationsStrategy(int numberOfElements, char * typeOfOperations, int *
   /* Check quantityOfOperations correctness */
   int i;
   for(i = 0; i < 3; i++) {
-    if(numberOfElements < quantityOfOperations[i]) {
+    if(blockSize < quantityOfOperations[i]) {
       if(typeOfOperations[i] == 'm' || typeOfOperations[i] == 'a' || typeOfOperations[i] == 'd') {
         printf("Too large amount of blocks to operate on in 4. argument\n");
         return -1;
       }
     }
   }
-}
-
-/**
- * Testing functions
- */
-double getTimeCreateTable(clockid_t clk_id, int numberOfElementsInTest, int blockSizeInTest) {
-  /* Variables */
-  struct timespec timeStart, timeEnd;
-  char ** testTable;
-  int i;
-
-  clock_gettime(clk_id, &timeStart);
-  testTable = createDynamicTable(numberOfElementsInTest);
-  for(i = 0; i < numberOfElementsInTest; i++)
-    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
-  clock_gettime(clk_id, &timeEnd);
-  return (timeEnd.tv_sec - timeStart.tv_sec)
-    + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
-}
-
-double getTimeFindElement(clockid_t clk_id, char ** testTable, int numberOfElementsInTest) {
-  /* Variables */
-  struct timespec timeStart, timeEnd;
-
-  clock_gettime(clk_id, &timeStart);
-  findBlockWithSpecifiedQuantityInDynamicTable(testTable, numberOfElementsInTest, 0);
-  clock_gettime(clk_id, &timeEnd);
-  return (timeEnd.tv_sec - timeStart.tv_sec)
-    + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
-}
-
-double getTimeDeleteHalfAddHalf(clockid_t clk_id, char ** testTable, int numberOfElementsInTest, int blockSizeInTest) {
-  /* Variables */
-  struct timespec timeStart, timeEnd;
-  int i;
-
-  clock_gettime(clk_id, &timeStart);
-  for(i = 0; i < numberOfElementsInTest / 2; i++)
-    removeBlockFromDynamicTable(testTable, numberOfElementsInTest, i);
-  for(i = 0; i < numberOfElementsInTest / 2; i++)
-    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
-  clock_gettime(clk_id, &timeEnd);
-  return (timeEnd.tv_sec - timeStart.tv_sec)
-    + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
-}
-
-double getTimeReplaceHalf(clockid_t clk_id, char ** testTable, int numberOfElementsInTest, int blockSizeInTest) {
-  /* Variables */
-  struct timespec timeStart, timeEnd;
-  int i;
-
-  clock_gettime(clk_id, &timeStart);
-  for(i = 0; i < numberOfElementsInTest / 2; i++) {
-    removeBlockFromDynamicTable(testTable, numberOfElementsInTest, i);
-    addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
-  }
-  clock_gettime(clk_id, &timeEnd);
-  return (timeEnd.tv_sec - timeStart.tv_sec)
-    + (timeEnd.tv_nsec - timeStart.tv_nsec) / BILLION;
 }
