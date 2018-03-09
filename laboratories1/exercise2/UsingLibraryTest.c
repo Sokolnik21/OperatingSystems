@@ -76,19 +76,19 @@ int main(int argc, char * argv[]) {
   // int variable = parseOperationsStrategy(&dupa, listOfOperations);
   // printf("%d\n", variable);
 
-  /* Dynamic test */
-  char ** a = createTable(allocationType, 5);
-  addBlockToTable(allocationType, a, 5, createBlock(blockSize), 0);
-  addBlockToTable(allocationType, a, 5, "Jagalat", 3);
-  // removeBlockFromTable(a, 5, 0);
-  char * b = findBlockWithSpecifiedQuantityInTable(allocationType, a, 5, 7);
-  printf("%s\n", a[0]);
-  printf("%s\n", b);
-
   return 0;
 }
 
 // int main() {
+//   /* Dynamic test */
+//   char ** a = createTable(allocationType, 5);
+//   addBlockToTable(allocationType, a, 5, createBlock(blockSize), 0);
+//   addBlockToTable(allocationType, a, 5, "Jagalat", 0);
+//   removeBlockFromTable(allocationType, a, 5, 0);
+//   char * b = findBlockWithSpecifiedQuantityInTable(allocationType, a, 5, 7);
+//   // printf("%s\n", a[0]);
+//   printf("%s\n", b);
+//
 //   /* Static test */
 //   initializeStaticTable();
 //   addBlockToStaticTable("Jaganala", 0);
@@ -96,34 +96,6 @@ int main(int argc, char * argv[]) {
 //   printf("%d\n", stringSize);
 //   char * w = findBlockWithSpecifiedQuantityInStaticTable(7);
 //   printf("w: %s\n", w);
-//
-//   // removeBlockFromStaticTable(0);
-//   printf("%s\n", staticTable[0]);
-//
-//   /* Dynamic test */
-//   char ** a = createDynamicTable(5);
-//   addBlockToDynamicTable(a, 5, "Jaga", 0);
-//   addBlockToDynamicTable(a, 5, "Jagalat", 3);
-//   // removeBlockFromTable(a, 5, 0);
-//   char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
-//   printf("%s\n", a[0]);
-//   printf("%s\n", b);
-//   // a[0] = malloc(sizeof(char) * 4);
-//   // a[0][0] = 'a';
-//   // a[0][1] = 'c';
-//   // a[0][2] = 'b';
-//   // a[0][3] = 'l';
-//   // a[0][4] = 'm';
-//   // a[0][5] = 'q';
-//   // printf("\n%d\n", getStringSize(a[0]));
-//   // // a[0] = "asdfas\n"; !!! NIEDOPUSZCZALNE !!!
-//   // printf("\n%c\n", a[0][5]);
-//   // // free(a[0]);
-//   // // "asdfa\n";
-//   //
-//   // printf("%s", a[1]);
-//   // // free(a[0]);
-//   deleteDynamicTable(a, 5);
 //   return 0;
 // }
 
