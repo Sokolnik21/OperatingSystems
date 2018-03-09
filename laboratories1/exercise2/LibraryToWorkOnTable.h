@@ -8,7 +8,7 @@
  * Part of the exercise that works on static table
  */
 #define MAX_STATIC_TABLE_SIZE 1000
-char static staticTable[MAX_STATIC_TABLE_SIZE][MAX_STATIC_TABLE_SIZE];
+char staticTable[MAX_STATIC_TABLE_SIZE][MAX_STATIC_TABLE_SIZE];
 
 /* Equivalent for creating and deleting dynamic table */
 void initializeStaticTable();

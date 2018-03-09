@@ -66,13 +66,14 @@ int main(int argc, char * argv[]) {
   char * foundElement;
   int counter;
 
-  /* Main loop */
+  /* Parser loop */
   int loops = 0;
   while(loops < 3) {
     switch(typeOfOperations[loops]) {
       case 'c'  : table = createTable(allocationType, numberOfElements);
                   break;
       case 'f'  : foundElement = findBlockWithSpecifiedQuantityInTable(allocationType, table, numberOfElements, quantityOfOperations[loops]);
+                  printf("\nFound element: %s\n", foundElement);
                   break;
       case 'a'  : counter = quantityOfOperations[loops] - 1;
                   while(counter >= 0) {
@@ -106,6 +107,33 @@ int main(int argc, char * argv[]) {
     loops++;
   }
 
+  /**
+   * Test for parser
+   */
+  int iter;
+  int innerIter;
+  switch(allocationType) {
+    case DYNAMIC:
+      printf("\nDynamic Table:\n");
+      for(iter = 0; iter < numberOfElements; iter++) {
+        if(table[iter] != 0) {
+          printf("%s\n", table[iter]);
+        }
+      }
+      break;
+    case STATIC:
+      printf("\nStatic Table:\n");
+      for(iter = 0; iter < numberOfElements; iter++) {
+        if(staticTable[iter][0] != '\0') {
+          printf("%s\n", staticTable[iter]);
+        }
+      }
+      break;
+  }
+
+  /**
+   * Generate data with
+   */
   return 0;
 }
 
