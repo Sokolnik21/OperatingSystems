@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "LibraryToWorkOnTable.h"
 
+#define NUMBER_OF_OPERATIONS 3
+
 typedef enum {
   DYNAMIC,
   STATIC
@@ -10,15 +12,6 @@ typedef enum {
 allocationStrategy;
 
 char * createBlock(int blockSize);
-
-typedef enum {
-  CREATE_TABLE,
-  DELETE_TABLE,
-  ADD_BLOCK,
-  DELETE_BLOCK,
-  FIND_ELEMENT
-}
-operationsStrategy;
 
 /**
  * Operation standarise
@@ -38,8 +31,11 @@ char * findBlockWithSpecifiedQuantityInTable(allocationStrategy strategy,
  * Parsing functions
  */
 int parseAllocationType(allocationStrategy * strategy, char * arg);
-int parseOperationsStrategy(operationsStrategy ** listOfOperations, char * arg);
+int parseOperationsStrategy(int blockSize, char * typeOfOperations, int * quantityOfOperations, char * arg);
 
+/**
+ * Main function
+ */
 int main(int argc, char * argv[]) {
   /* Checking amount of arguments */
   if(argc != 5) {
@@ -51,30 +47,64 @@ int main(int argc, char * argv[]) {
   int numberOfElements;
   int blockSize;
   allocationStrategy allocationType;
-  char * listOfOperations;
+  char typeOfOperations[NUMBER_OF_OPERATIONS];
+  int quantityOfOperations[NUMBER_OF_OPERATIONS];
 
   /* Parsing variables */
   numberOfElements = atoi(argv[1]);
   blockSize = atoi(argv[2]);
   if(parseAllocationType(&allocationType, argv[3]) == -1)
     return -2;
-  listOfOperations = argv[4];
+  if(parseOperationsStrategy(blockSize, typeOfOperations, quantityOfOperations, argv[4]) == -1)
+    return -3;
 
   /* Setting dependation for random number generator */
   srand(time(NULL));
 
+  /* Variables usesd in main loop */
+  char ** table;
+  char * foundElement;
+  int counter;
 
-  // allocationStrategy x = allocationType;
-  // char * tmp;
-  // tmp = createBlock(blockSize);
-  // printf("%s\n", tmp);
-  // free(tmp);
-  //
-  // char ** table = createTable(allocationType, numberOfElements);
-  //
-  // operationsStrategy * dupa;
-  // int variable = parseOperationsStrategy(&dupa, listOfOperations);
-  // printf("%d\n", variable);
+  /* Main loop */
+  int loops = 0;
+  while(loops < 3) {
+    switch(typeOfOperations[loops]) {
+      case 'c'  : table = createTable(allocationType, numberOfElements);
+                  break;
+      case 'f'  : foundElement = findBlockWithSpecifiedQuantityInTable(allocationType, table, numberOfElements, quantityOfOperations[loops]);
+                  break;
+      case 'a'  : counter = quantityOfOperations[loops] - 1;
+                  while(counter >= 0) {
+                    addBlockToTable(allocationType, table, numberOfElements, createBlock(blockSize), counter);
+                    counter--;
+                  }
+                  break;
+      case 'd'  : counter = quantityOfOperations[loops] - 1;
+                  while(counter >= 0) {
+                    removeBlockFromTable(allocationType, table, numberOfElements, counter);
+                    counter--;
+                  }
+                  break;
+      case 'm'  : counter = quantityOfOperations[loops] - 1;
+                  while(counter >= 0) {
+                    addBlockToTable(allocationType, table, numberOfElements, createBlock(blockSize), counter);
+                    counter--;
+                  }
+                  counter = quantityOfOperations[loops] - 1;
+                  while(counter >= 0) {
+                    removeBlockFromTable(allocationType, table, numberOfElements, counter);
+                    counter--;
+                  }
+                  break;
+      default : printf("Wrong operation type\n");
+                printf("4. argument should be in format [c]:[i]:[c]:[i]:[c]:[i]\n");
+                printf("Where c should be 'c', 'f', 'a', 'd' or 'm'\n");
+                printf("And i should be an integer\n");
+                return -3;
+    }
+    loops++;
+  }
 
   return 0;
 }
@@ -175,21 +205,29 @@ int parseAllocationType(allocationStrategy * strategy, char * arg) {
   }
 }
 
-int parseOperationsStrategy(operationsStrategy ** listOfOperations, char * arg) {
-  /* Allocating space for operations queue */
-  int i = 0;
-  while (arg[i] != '\0') {
-    printf("a\n");
-    i++;
-  }
+int parseOperationsStrategy(int blockSize, char * typeOfOperations, int * quantityOfOperations, char * arg) {
+  /* Setting variables */
+  char op1, op2, op3;
+  int qan1, qan2, qan3;
+  sscanf (arg,"%c:%d:%c:%d:%c:%d",&op1,&qan1,&op2,&qan2,&op3,&qan3);
 
-  /* Filling queue with operations */
-  i = 0;
-  while (arg[i] != '\0') {
-    switch(arg[i]) {
-      case 'c'  : break;
+  /* Filling arrays */
+  typeOfOperations[0] = op1;
+  typeOfOperations[1] = op2;
+  typeOfOperations[2] = op3;
+
+  quantityOfOperations[0] = qan1;
+  quantityOfOperations[1] = qan2;
+  quantityOfOperations[2] = qan3;
+
+  /* Check quantityOfOperations correctness */
+  int i;
+  for(i = 0; i < 3; i++) {
+    if(blockSize < quantityOfOperations[i]) {
+      if(typeOfOperations[i] == 'm' || typeOfOperations[i] == 'a' || typeOfOperations[i] == 'd') {
+        printf("Too large amount of blocks to operate on in 4. argument\n");
+        return -1;
+      }
     }
-    // printf("%c\n", arg[i]);
-    i++;
   }
 }

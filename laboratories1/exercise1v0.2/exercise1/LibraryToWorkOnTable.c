@@ -44,29 +44,21 @@ int removeBlockFromStaticTable(int cell) {
 }
 
 char * findBlockWithSpecifiedQuantityInStaticTable(int quantity) {
-  int foundCell = 0;
-  int blockAsciiSumTmp = 0;
-  int stringSize;
-
-  int bestDifference;
-  int tmpDifference;
-  bestDifference = tmpDifference = 0;
-
+  int blockSize, foundCell;
+  blockSize = foundCell = 0;
+  int absoluteTmp, absolute;
+  absoluteTmp = 0;
+  absolute = INT_MAX;
   int i;
-  int j;
   for(i = 0; i < MAX_STATIC_TABLE_SIZE; i++) {
-    if(staticTable[i][0] == '\0')
+    if(staticTable[i] == '\0')
       continue;
-    stringSize = getStringSize(staticTable[i]);
-    for(j = 0; j < stringSize; j++) {
-      blockAsciiSumTmp += (int) staticTable[i][j];
-    }
-    tmpDifference = blockAsciiSumTmp > quantity ? blockAsciiSumTmp - quantity : quantity - blockAsciiSumTmp;
-    if(tmpDifference < bestDifference) {
+    blockSize = getStringSize(staticTable[i]);
+    absoluteTmp = blockSize > quantity ? blockSize - quantity : quantity - blockSize;
+    if(absoluteTmp < absolute) {
       foundCell = i;
-      bestDifference = tmpDifference;
+      absolute = absoluteTmp;
     }
-    blockAsciiSumTmp = 0;
   }
   return staticTable[foundCell];
 }
@@ -111,45 +103,26 @@ int removeBlockFromDynamicTable(char ** table, int cellsQuantity, int cell) {
 }
 
 char * findBlockWithSpecifiedQuantityInDynamicTable(char ** table, int cellsQuantity, int quantity) {
-  int foundCell = 0;
-  int blockAsciiSumTmp = 0;
-  int stringSize;
-
-  int bestDifference;
-  int tmpDifference;
-  bestDifference = tmpDifference = 0;
-
+  int blockSize, foundCell;
+  blockSize = foundCell = 0;
+  int absoluteTmp, absolute;
+  absoluteTmp = 0;
+  absolute = INT_MAX;
   int i;
-  int j;
   for(i = 0; i < cellsQuantity; i++) {
     if(table[i] == NULL)
       continue;
-    stringSize = getStringSize(table[i]);
-    for(j = 0; j < stringSize; j++) {
-      blockAsciiSumTmp += (int) table[i][j];
-    }
-    tmpDifference = blockAsciiSumTmp > quantity ? blockAsciiSumTmp - quantity : quantity - blockAsciiSumTmp;
-    if(tmpDifference < bestDifference) {
+    blockSize = getStringSize(table[i]);
+    absoluteTmp = blockSize > quantity ? blockSize - quantity : quantity - blockSize;
+    if(absoluteTmp < absolute) {
       foundCell = i;
-      bestDifference = tmpDifference;
+      absolute = absoluteTmp;
     }
-    blockAsciiSumTmp = 0;
   }
   return table[foundCell];
 }
-
-// int main() {
-//   /* Dynamic test */
-//   char ** a = createDynamicTable(5);
-//   addBlockToDynamicTable(a, 5, "Jaga", 0);
-//   addBlockToDynamicTable(a, 5, "Jagalat", 0);
-//   char * f = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 42);
-//   printf("%s\n", f);
-//   // removeBlockFromDynamicTable(a, 5, 0);
-//   char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
-//   // printf("%s\n", a[0]);
-//   printf("%s\n", b);
 //
+// int main() {
 //   /* Static test */
 //   initializeStaticTable();
 //   addBlockToStaticTable("Jaganala", 0);
@@ -157,5 +130,33 @@ char * findBlockWithSpecifiedQuantityInDynamicTable(char ** table, int cellsQuan
 //   printf("%d\n", stringSize);
 //   char * w = findBlockWithSpecifiedQuantityInStaticTable(7);
 //   printf("w: %s\n", w);
+//
+//   // removeBlockFromStaticTable(0);
+//   printf("%s\n", staticTable[0]);
+//
+//   /* Dynamic test */
+//   char ** a = createDynamicTable(5);
+//   addBlockToDynamicTable(a, 5, "Jaga", 0);
+//   addBlockToDynamicTable(a, 5, "Jagalat", 3);
+//   // removeBlockFromTable(a, 5, 0);
+//   char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
+//   printf("%s\n", a[0]);
+//   printf("%s\n", b);
+//   // a[0] = malloc(sizeof(char) * 4);
+//   // a[0][0] = 'a';
+//   // a[0][1] = 'c';
+//   // a[0][2] = 'b';
+//   // a[0][3] = 'l';
+//   // a[0][4] = 'm';
+//   // a[0][5] = 'q';
+//   // printf("\n%d\n", getStringSize(a[0]));
+//   // // a[0] = "asdfas\n"; !!! NIEDOPUSZCZALNE !!!
+//   // printf("\n%c\n", a[0][5]);
+//   // // free(a[0]);
+//   // // "asdfa\n";
+//   //
+//   // printf("%s", a[1]);
+//   // // free(a[0]);
+//   deleteDynamicTable(a, 5);
 //   return 0;
 // }
