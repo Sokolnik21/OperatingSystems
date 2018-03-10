@@ -1,0 +1,182 @@
+<><><><><><><><><><><><>
+dynamicLinkLibraryTest
+<><><><><><><><><><><><>
+
+Optimalization 0
+
+Found element: ykkbrfmvlzbmgfd
+
+Dynamic Table:
+ykkbrfmvlzbmgfd
+jlvryzcaiwffscf
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.394128 sec
+	USER: 0.387182 sec
+	SYST: 0.386998 sec
+Find element:
+	REAL: 0.121161 sec
+	USER: 0.121139 sec
+	SYST: 0.121154 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.191766 sec
+	USER: 0.192959 sec
+	SYST: 0.191642 sec
+Replace half blocks
+	REAL: 0.191680 sec
+	USER: 0.190590 sec
+	SYST: 0.191088 sec
+
+
+Optimalization 2
+
+Found element: tstglvqfogzsjef
+
+Dynamic Table:
+tstglvqfogzsjef
+wgijdhlwilgiqfm
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.400664 sec
+	USER: 0.387936 sec
+	SYST: 0.387219 sec
+Find element:
+	REAL: 0.121208 sec
+	USER: 0.121189 sec
+	SYST: 0.121185 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.192247 sec
+	USER: 0.194090 sec
+	SYST: 0.194716 sec
+Replace half blocks
+	REAL: 0.191895 sec
+	USER: 0.190421 sec
+	SYST: 0.190374 sec
+
+<><><><><><><><><><><><>
+sharedLibraryTest
+<><><><><><><><><><><><>
+
+Optimalization 0
+
+Found element: dxrqunemzwvkjvz
+
+Dynamic Table:
+dxrqunemzwvkjvz
+vbdqzijlmlwbxio
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.391997 sec
+	USER: 0.377285 sec
+	SYST: 0.377229 sec
+Find element:
+	REAL: 0.121247 sec
+	USER: 0.121187 sec
+	SYST: 0.121194 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.186274 sec
+	USER: 0.187877 sec
+	SYST: 0.187894 sec
+Replace half blocks
+	REAL: 0.188398 sec
+	USER: 0.187486 sec
+	SYST: 0.187483 sec
+
+
+Optimalization 2
+
+Found element: xqvelpqhkbtrjwv
+
+Dynamic Table:
+xqvelpqhkbtrjwv
+vdikyftudijtyzc
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.392228 sec
+	USER: 0.377174 sec
+	SYST: 0.377041 sec
+Find element:
+	REAL: 0.121299 sec
+	USER: 0.121186 sec
+	SYST: 0.121197 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.186379 sec
+	USER: 0.189345 sec
+	SYST: 0.187602 sec
+Replace half blocks
+	REAL: 0.188219 sec
+	USER: 0.187233 sec
+	SYST: 0.187512 sec
+
+<><><><><><><><><><><><>
+staticLibraryTest
+<><><><><><><><><><><><>
+
+Optimalization 0
+
+Found element: cfrkxixcttllnkr
+
+Dynamic Table:
+cfrkxixcttllnkr
+tzwhjfaubbrfgxm
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.372079 sec
+	USER: 0.360250 sec
+	SYST: 0.360373 sec
+Find element:
+	REAL: 0.126675 sec
+	USER: 0.124325 sec
+	SYST: 0.129968 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.192191 sec
+	USER: 0.193634 sec
+	SYST: 0.185671 sec
+Replace half blocks
+	REAL: 0.182998 sec
+	USER: 0.204896 sec
+	SYST: 0.184209 sec
+
+
+Optimalization 2
+
+Found element: tbawsyvpgmnflzx
+
+Dynamic Table:
+tbawsyvpgmnflzx
+itvveuzmvomykmf
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.386088 sec
+	USER: 0.375323 sec
+	SYST: 0.374897 sec
+Find element:
+	REAL: 0.121132 sec
+	USER: 0.121146 sec
+	SYST: 0.121134 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.183080 sec
+	USER: 0.185269 sec
+	SYST: 0.183572 sec
+Replace half blocks
+	REAL: 0.183687 sec
+	USER: 0.182646 sec
+	SYST: 0.182648 sec

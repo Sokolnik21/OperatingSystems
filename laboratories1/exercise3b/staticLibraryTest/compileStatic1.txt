@@ -1,0 +1,26 @@
+
+Found element: gwptbwwxaegqypp
+
+Dynamic Table:
+gwptbwwxaegqypp
+zvgyilycucfqsse
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.378401 sec
+	USER: 0.360419 sec
+	SYST: 0.360342 sec
+Find element:
+	REAL: 0.121136 sec
+	USER: 0.121116 sec
+	SYST: 0.121141 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.179499 sec
+	USER: 0.180104 sec
+	SYST: 0.180636 sec
+Replace half blocks
+	REAL: 0.180385 sec
+	USER: 0.178959 sec
+	SYST: 0.178913 sec

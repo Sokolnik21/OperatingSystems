@@ -1,0 +1,26 @@
+
+Found element: zuozjetrkgsejnd
+
+Dynamic Table:
+zuozjetrkgsejnd
+fmhqurvpgsjqcvd
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.399589 sec
+	USER: 0.386991 sec
+	SYST: 0.386400 sec
+Find element:
+	REAL: 0.121264 sec
+	USER: 0.121279 sec
+	SYST: 0.121226 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.192552 sec
+	USER: 0.194041 sec
+	SYST: 0.191979 sec
+Replace half blocks
+	REAL: 0.190501 sec
+	USER: 0.189852 sec
+	SYST: 0.189907 sec

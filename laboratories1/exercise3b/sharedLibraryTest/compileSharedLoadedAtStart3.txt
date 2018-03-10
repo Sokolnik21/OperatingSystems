@@ -1,0 +1,26 @@
+
+Found element: kcfiasvmudcwnkq
+
+Dynamic Table:
+kcfiasvmudcwnkq
+bvcizjvpgyzhlpj
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.388366 sec
+	USER: 0.377523 sec
+	SYST: 0.376934 sec
+Find element:
+	REAL: 0.121180 sec
+	USER: 0.121195 sec
+	SYST: 0.121196 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.186220 sec
+	USER: 0.187675 sec
+	SYST: 0.186972 sec
+Replace half blocks
+	REAL: 0.188153 sec
+	USER: 0.187124 sec
+	SYST: 0.187156 sec

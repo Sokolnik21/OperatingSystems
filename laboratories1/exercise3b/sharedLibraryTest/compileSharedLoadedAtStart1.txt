@@ -1,0 +1,26 @@
+
+Found element: vubgdcfhsdigpkq
+
+Dynamic Table:
+vubgdcfhsdigpkq
+uaagigpluczsenh
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 10000, blockSize - 3000
+
+Create table and fill it with data:
+	REAL: 0.389093 sec
+	USER: 0.377236 sec
+	SYST: 0.377263 sec
+Find element:
+	REAL: 0.121210 sec
+	USER: 0.121125 sec
+	SYST: 0.121176 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.186440 sec
+	USER: 0.188316 sec
+	SYST: 0.186781 sec
+Replace half blocks
+	REAL: 0.188123 sec
+	USER: 0.187107 sec
+	SYST: 0.187119 sec
