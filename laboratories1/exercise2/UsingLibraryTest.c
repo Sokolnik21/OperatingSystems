@@ -208,26 +208,6 @@ int main(int argc, char * argv[]) {
   return 0;
 }
 
-// int main() {
-//   /* Dynamic test */
-//   char ** a = createTable(allocationType, 5);
-//   addBlockToTable(allocationType, a, 5, createBlock(blockSize), 0);
-//   addBlockToTable(allocationType, a, 5, "Jagalat", 0);
-//   removeBlockFromTable(allocationType, a, 5, 0);
-//   char * b = findBlockWithSpecifiedQuantityInTable(allocationType, a, 5, 7);
-//   // printf("%s\n", a[0]);
-//   printf("%s\n", b);
-//
-//   /* Static test */
-//   initializeStaticTable();
-//   addBlockToStaticTable("Jaganala", 0);
-//   int stringSize = getStringSize(staticTable[0]);
-//   printf("%d\n", stringSize);
-//   char * w = findBlockWithSpecifiedQuantityInStaticTable(7);
-//   printf("w: %s\n", w);
-//   return 0;
-// }
-
 char * createBlock(int blockSize) {
   /* Allocating space for string */
   char * result = calloc(blockSize, sizeof(char));

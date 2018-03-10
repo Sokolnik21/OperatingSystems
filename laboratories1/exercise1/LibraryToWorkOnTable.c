@@ -2,12 +2,15 @@
   File: LibraryToWorkOnTable.c
  */
 
-#include <limits.h>
 #include <stdlib.h>
 #include "LibraryToWorkOnTable.h"
 
-/* For testing */
-#include <stdio.h>
+int getStringSize(char * block) {
+  int charCounter = 0;
+  while(block[charCounter] != '\0')
+    charCounter++;
+  return charCounter;
+}
 
 /**
  * Part of the exercise that works on static table
@@ -24,8 +27,9 @@ void initializeStaticTable() {
 int addBlockToStaticTable(char * block, int cell) {
   if(cell > MAX_STATIC_TABLE_SIZE - 1 || cell < 0) return -1;
 
-  /* Clear table before add */
+  /* Clearing table before addition */
   removeBlockFromStaticTable(cell);
+
   int charCounter = getStringSize(block);
   int i;
   for(i = 0; i < charCounter; i++)
@@ -85,13 +89,6 @@ void deleteDynamicTable(char ** table, int cellsQuantity) {
   free(table);
 }
 
-int getStringSize(char * block) {
-  int charCounter = 0;
-  while(block[charCounter] != '\0')
-    charCounter++;
-  return charCounter;
-}
-
 int addBlockToDynamicTable(char ** table, int cellsQuantity, char * block, int cell) {
   if(cell > cellsQuantity - 1 || cell < 0) return -1;
   int charCounter = getStringSize(block);
@@ -137,25 +134,3 @@ char * findBlockWithSpecifiedQuantityInDynamicTable(char ** table, int cellsQuan
   }
   return table[foundCell];
 }
-
-// int main() {
-//   // /* Dynamic test */
-//   // char ** a = createDynamicTable(5);
-//   // addBlockToDynamicTable(a, 5, "Jaga", 0);
-//   // addBlockToDynamicTable(a, 5, "Jagalat", 0);
-//   // char * f = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 42);
-//   // printf("%s\n", f);
-//   // // removeBlockFromDynamicTable(a, 5, 0);
-//   // char * b = findBlockWithSpecifiedQuantityInDynamicTable(a, 5, 7);
-//   // // printf("%s\n", a[0]);
-//   // printf("%s\n", b);
-//
-//   /* Static test */
-//   initializeStaticTable();
-//   addBlockToStaticTable("Jaganala", 0);
-//   int stringSize = getStringSize(staticTable[0]);
-//   printf("%d\n", stringSize);
-//   char * w = findBlockWithSpecifiedQuantityInStaticTable(7);
-//   printf("w: %s\n", w);
-//   return 0;
-// }
