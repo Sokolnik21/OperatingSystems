@@ -1,0 +1,19 @@
+Execution times for dynamic table with parameters:
+numberOfBlocks - 1000, blockSize - 300
+
+Create table and fill it with data:
+	REAL: 0.009679 sec
+	USER: 0.006477 sec
+	SYST: 0.004038 sec
+Find element:
+	REAL: 0.001240 sec
+	USER: 0.001228 sec
+	SYST: 0.001235 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.001887 sec
+	USER: 0.001886 sec
+	SYST: 0.001926 sec
+Replace half blocks
+	REAL: 0.001901 sec
+	USER: 0.001887 sec
+	SYST: 0.001925 sec

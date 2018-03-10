@@ -1,0 +1,71 @@
+<><><><><><><><><><><><>
+dynamicLinkLibraryTest
+<><><><><><><><><><><><>
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 1000, blockSize - 300
+
+Create table and fill it with data:
+	REAL: 0.007576 sec
+	USER: 0.005578 sec
+	SYST: 0.004063 sec
+Find element:
+	REAL: 0.001290 sec
+	USER: 0.001327 sec
+	SYST: 0.001240 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.002023 sec
+	USER: 0.002046 sec
+	SYST: 0.002065 sec
+Replace half blocks
+	REAL: 0.002081 sec
+	USER: 0.002130 sec
+	SYST: 0.002047 sec
+
+<><><><><><><><><><><><>
+sharedLibraryTest
+<><><><><><><><><><><><>
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 1000, blockSize - 300
+
+Create table and fill it with data:
+	REAL: 0.009703 sec
+	USER: 0.006213 sec
+	SYST: 0.004059 sec
+Find element:
+	REAL: 0.001233 sec
+	USER: 0.001237 sec
+	SYST: 0.001238 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.001937 sec
+	USER: 0.001927 sec
+	SYST: 0.001960 sec
+Replace half blocks
+	REAL: 0.001985 sec
+	USER: 0.001946 sec
+	SYST: 0.001940 sec
+
+<><><><><><><><><><><><>
+staticLibraryTest
+<><><><><><><><><><><><>
+
+Execution times for dynamic table with parameters:
+numberOfBlocks - 1000, blockSize - 300
+
+Create table and fill it with data:
+	REAL: 0.009679 sec
+	USER: 0.006477 sec
+	SYST: 0.004038 sec
+Find element:
+	REAL: 0.001240 sec
+	USER: 0.001228 sec
+	SYST: 0.001235 sec
+Delete half blocks and then add half blocks:
+	REAL: 0.001887 sec
+	USER: 0.001886 sec
+	SYST: 0.001926 sec
+Replace half blocks
+	REAL: 0.001901 sec
+	USER: 0.001887 sec
+	SYST: 0.001925 sec
