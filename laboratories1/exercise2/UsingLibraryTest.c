@@ -143,6 +143,14 @@ int main(int argc, char * argv[]) {
    * Generate data with execution time
    */
 
+  /* Setting file handler */
+  FILE *f = fopen("raport2.txt", "w");
+  if (f == NULL)
+  {
+      printf("Error opening file!\n");
+      exit(1);
+  }
+
   /* Variables */
   int numberOfElementsInTest = 1000;
   int blockSizeInTest = 300;
@@ -154,18 +162,24 @@ int main(int argc, char * argv[]) {
   int i;  // Iterator used to iterate table
 
   printf("\nExecution times for dynamic table with parameters:\n");
+  fprintf(f, "Execution times for dynamic table with parameters:\n");
   printf("numberOfBlocks - %d, blockSize - %d\n\n", numberOfElementsInTest, blockSizeInTest);
+  fprintf(f, "numberOfBlocks - %d, blockSize - %d\n\n", numberOfElementsInTest, blockSizeInTest);
 
   printf("Create table and fill it with data:\n");
+  fprintf(f, "Create table and fill it with data:\n");
   /* REAL TIME */
   timeDifference = getTimeCreateTable(CLOCK_REALTIME, numberOfElementsInTest, blockSizeInTest);
   printf("\tREAL: %f sec\n", timeDifference);
+  fprintf(f, "\tREAL: %f sec\n", timeDifference);
   /* USER TIME */
   timeDifference = getTimeCreateTable(CLOCK_MONOTONIC, numberOfElementsInTest, blockSizeInTest);
   printf("\tUSER: %f sec\n", timeDifference);
+  fprintf(f, "\tUSER: %f sec\n", timeDifference);
   /* SYSTEM TIME */
   timeDifference = getTimeCreateTable(CLOCK_PROCESS_CPUTIME_ID, numberOfElementsInTest, blockSizeInTest);
   printf("\tSYST: %f sec\n", timeDifference);
+  fprintf(f, "\tSYST: %f sec\n", timeDifference);
 
   /* Setting table */
   testTable = createDynamicTable(numberOfElementsInTest);
@@ -173,37 +187,51 @@ int main(int argc, char * argv[]) {
     addBlockToDynamicTable(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
 
   printf("Find element:\n");
+  fprintf(f, "Find element:\n");
   /* REAL TIME */
   timeDifference = getTimeFindElement(CLOCK_REALTIME, testTable, numberOfElementsInTest);
   printf("\tREAL: %f sec\n", timeDifference);
+  fprintf(f, "\tREAL: %f sec\n", timeDifference);
   /* USER TIME */
   timeDifference = getTimeFindElement(CLOCK_MONOTONIC, testTable, numberOfElementsInTest);
   printf("\tUSER: %f sec\n", timeDifference);
+  fprintf(f, "\tUSER: %f sec\n", timeDifference);
   /* SYSTEM TIME */
   timeDifference = getTimeFindElement(CLOCK_PROCESS_CPUTIME_ID, testTable, numberOfElementsInTest);
   printf("\tSYST: %f sec\n", timeDifference);
+  fprintf(f, "\tSYST: %f sec\n", timeDifference);
 
   printf("Delete half blocks and then add half blocks:\n");
+  fprintf(f, "Delete half blocks and then add half blocks:\n");
   /* REAL TIME */
   timeDifference = getTimeDeleteHalfAddHalf(CLOCK_REALTIME, testTable, numberOfElementsInTest, blockSizeInTest);
   printf("\tREAL: %f sec\n", timeDifference);
+  fprintf(f, "\tREAL: %f sec\n", timeDifference);
   /* USER TIME */
   timeDifference = getTimeDeleteHalfAddHalf(CLOCK_MONOTONIC, testTable, numberOfElementsInTest, blockSizeInTest);
   printf("\tUSER: %f sec\n", timeDifference);
+  fprintf(f, "\tUSER: %f sec\n", timeDifference);
   /* SYSTEM TIME */
   timeDifference = getTimeDeleteHalfAddHalf(CLOCK_PROCESS_CPUTIME_ID, testTable, numberOfElementsInTest, blockSizeInTest);
   printf("\tSYST: %f sec\n", timeDifference);
+  fprintf(f, "\tSYST: %f sec\n", timeDifference);
 
   printf("Replace half blocks\n");
+  fprintf(f, "Replace half blocks\n");
   /* REAL TIME */
   timeDifference = getTimeReplaceHalf(CLOCK_REALTIME, testTable, numberOfElementsInTest, blockSizeInTest);
   printf("\tREAL: %f sec\n", timeDifference);
+  fprintf(f, "\tREAL: %f sec\n", timeDifference);
   /* USER TIME */
   timeDifference = getTimeReplaceHalf(CLOCK_MONOTONIC, testTable, numberOfElementsInTest, blockSizeInTest);
   printf("\tUSER: %f sec\n", timeDifference);
+  fprintf(f, "\tUSER: %f sec\n", timeDifference);
   /* SYSTEM TIME */
   timeDifference = getTimeReplaceHalf(CLOCK_PROCESS_CPUTIME_ID, testTable, numberOfElementsInTest, blockSizeInTest);
   printf("\tSYST: %f sec\n", timeDifference);
+  fprintf(f, "\tSYST: %f sec\n", timeDifference);
+
+  fclose(f);
 
   return 0;
 }

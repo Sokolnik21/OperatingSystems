@@ -27,3 +27,6 @@ testStatic:
 
 run:
 	./UsingLibraryTest.out
+
+clean:
+	rm *.out
