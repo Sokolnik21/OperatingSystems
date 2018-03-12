@@ -16,6 +16,26 @@ allocationStrategy;
 char * createBlock(int blockSize);
 
 /**
+ * Declaring function pointers to use dynamic linking
+ */
+ /* Part of the declared functions that works on static table */
+void (* initializeStaticTable_h)();
+
+int (* addBlockToStaticTable_h)(char * block, int cell);
+int (* removeBlockFromStaticTable_h)(int cell);
+
+char * (* findBlockWithSpecifiedQuantityInStaticTable_h)(int quantity);
+
+ /* Part of the declared functions that works on dynamic table */
+char ** (* createDynamicTable_h)(int cellsQuantity);
+void (* deleteDynamicTable_h)(char ** table, int cellsQuantity);
+
+int (* addBlockToDynamicTable_h)(char ** table, int cellsQuantity, char * block, int cell);
+int (* removeBlockFromDynamicTable_h)(char ** table, int cellsQuantity, int cell);
+
+char * (* findBlockWithSpecifiedQuantityInDynamicTable_h)(char ** table, int cellsQuantity, int quantity);
+
+/**
  * Operation standarise
  */
 char ** createTable(allocationStrategy strategy, int cellsQuantity);
@@ -53,73 +73,139 @@ int main(int argc, char * argv[]) {
     return -1;
   }
 
-  /* Variables */
-  int numberOfElements;
-  int blockSize;
-  allocationStrategy allocationType;
-  char typeOfOperations[NUMBER_OF_OPERATIONS];
-  int quantityOfOperations[NUMBER_OF_OPERATIONS];
+/* Variables */
+int numberOfElements;
+int blockSize;
+allocationStrategy allocationType;
+char typeOfOperations[NUMBER_OF_OPERATIONS];
+int quantityOfOperations[NUMBER_OF_OPERATIONS];
 
-  /* Parsing variables */
-  numberOfElements = atoi(argv[1]);
-  blockSize = atoi(argv[2]);
-  if(parseAllocationType(&allocationType, argv[3]) == -1)
-    return -2;
-  if(parseOperationsStrategy(numberOfElements, typeOfOperations, quantityOfOperations, argv[4]) == -1)
-    return -3;
+/* Parsing variables */
+numberOfElements = atoi(argv[1]);
+blockSize = atoi(argv[2]);
+if(parseAllocationType(&allocationType, argv[3]) == -1)
+  return -2;
+if(parseOperationsStrategy(numberOfElements, typeOfOperations, quantityOfOperations, argv[4]) == -1)
+  return -3;
 
-  /* Setting dependation for random number generator */
-  srand(time(NULL));
+/* Setting dependation for random number generator */
+srand(time(NULL));
 
-  /**
-   * Main loop
-   */
+/**
+ * Initializing function pointers
+ */
 
-  /* Variables usesd in main loop */
-  char ** table;
-  char * foundElement;
-  int counter;
+/* Creating handler for linked library */
+void * handle;
 
-  /* Parser loop */
-  int loops = 0;
-  while(loops < 3) {
-    switch(typeOfOperations[loops]) {
-      case 'c'  : table = createTable(allocationType, numberOfElements);
-                  break;
-      case 'f'  : foundElement = findBlockWithSpecifiedQuantityInTable(allocationType, table, numberOfElements, quantityOfOperations[loops]);
-                  printf("\nFound element: %s\n", foundElement);
-                  break;
-      case 'a'  : counter = quantityOfOperations[loops] - 1;
-                  while(counter >= 0) {
-                    addBlockToTable(allocationType, table, numberOfElements, createBlock(blockSize), counter);
-                    counter--;
-                  }
-                  break;
-      case 'd'  : counter = quantityOfOperations[loops] - 1;
-                  while(counter >= 0) {
-                    removeBlockFromTable(allocationType, table, numberOfElements, counter);
-                    counter--;
-                  }
-                  break;
-      case 'm'  : counter = quantityOfOperations[loops] - 1;
-                  while(counter >= 0) {
-                    addBlockToTable(allocationType, table, numberOfElements, createBlock(blockSize), counter);
-                    counter--;
-                  }
-                  counter = quantityOfOperations[loops] - 1;
-                  while(counter >= 0) {
-                    removeBlockFromTable(allocationType, table, numberOfElements, counter);
-                    counter--;
-                  }
-                  break;
-      default : printf("Wrong operation type\n");
-                printf("4. argument should be in format [c]:[i]:[c]:[i]:[c]:[i]\n");
-                printf("Where c should be 'c', 'f', 'a', 'd' or 'm'\n");
-                printf("And i should be an integer\n");
-                return -3;
-    }
-    loops++;
+handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
+if (!handle) {
+ fprintf(stderr, "%s\n", dlerror());
+ exit(EXIT_FAILURE);
+}
+
+/* Part of the declared functions that works on static table */
+initializeStaticTable_h = (void (*)()) dlsym(handle, "initializeStaticTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+
+addBlockToStaticTable_h = (int (*)(char * block, int cell)) dlsym(handle, "addBlockToStaticTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+removeBlockFromStaticTable_h = (int (*)(int cell)) dlsym(handle, "removeBlockFromStaticTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+
+findBlockWithSpecifiedQuantityInStaticTable_h = (char * (*)(int quantity)) dlsym(handle, "findBlockWithSpecifiedQuantityInStaticTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+
+/* Part of the declared functions that works on dynamic table */
+createDynamicTable_h = (char ** (*)(int cellsQuantity)) dlsym(handle, "createDynamicTable");;
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+deleteDynamicTable_h = (void (*)(char ** table, int cellsQuantity)) dlsym(handle, "deleteDynamicTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+
+addBlockToDynamicTable_h = (int (*)(char ** table, int cellsQuantity, char * block, int cell)) dlsym(handle, "addBlockToDynamicTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+removeBlockFromDynamicTable_h = (int (*)(char ** table, int cellsQuantity, int cell)) dlsym(handle, "removeBlockFromDynamicTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+
+findBlockWithSpecifiedQuantityInDynamicTable_h = (char * (*)(char ** table, int cellsQuantity, int quantity)) dlsym(handle, "findBlockWithSpecifiedQuantityInDynamicTable");
+if(dlerror() != NULL){
+  fprintf(stderr, "%s\n", dlerror());
+  exit(EXIT_FAILURE);
+}
+
+/**
+ * Main loop
+ */
+
+/* Variables usesd in main loop */
+char ** table;
+char * foundElement;
+int counter;
+
+/* Parser loop */
+int loops = 0;
+while(loops < 3) {
+  switch(typeOfOperations[loops]) {
+    case 'c'  : table = createTable(allocationType, numberOfElements);
+                break;
+    case 'f'  : foundElement = findBlockWithSpecifiedQuantityInTable(allocationType, table, numberOfElements, quantityOfOperations[loops]);
+                printf("\nFound element: %s\n", foundElement);
+                break;
+    case 'a'  : counter = quantityOfOperations[loops] - 1;
+                while(counter >= 0) {
+                  addBlockToTable(allocationType, table, numberOfElements, createBlock(blockSize), counter);
+                  counter--;
+                }
+                break;
+    case 'd'  : counter = quantityOfOperations[loops] - 1;
+                while(counter >= 0) {
+                  removeBlockFromTable(allocationType, table, numberOfElements, counter);
+                  counter--;
+                }
+                break;
+    case 'm'  : counter = quantityOfOperations[loops] - 1;
+                while(counter >= 0) {
+                  addBlockToTable(allocationType, table, numberOfElements, createBlock(blockSize), counter);
+                  counter--;
+                }
+                counter = quantityOfOperations[loops] - 1;
+                while(counter >= 0) {
+                  removeBlockFromTable(allocationType, table, numberOfElements, counter);
+                  counter--;
+                }
+                break;
+    default : printf("Wrong operation type\n");
+              printf("4. argument should be in format [c]:[i]:[c]:[i]:[c]:[i]\n");
+              printf("Where c should be 'c', 'f', 'a', 'd' or 'm'\n");
+              printf("And i should be an integer\n");
+              return -3;
   }
+  loops++;
+}
 
   /**
    * Test for parser
@@ -184,36 +270,6 @@ int main(int argc, char * argv[]) {
   fprintf(f, "\tSYST: %f sec\n", timeDifference);
 
   /* Setting table */
-
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  char ** (* createDynamicTable_h)(int cellsQuantity);
-  int (* addBlockToDynamicTable_h)(char ** table, int cellsQuantity, char * block, int cell);
-
-  /* Initializing function pointers */
-  createDynamicTable_h = (char ** (*)(int cellsQuantity)) dlsym(handle, "createDynamicTable");;
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  addBlockToDynamicTable_h = (int (*)(char ** table, int cellsQuantity, char * block, int cell)) dlsym(handle, "addBlockToDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   testTable = (* createDynamicTable_h)(numberOfElementsInTest);
   for(i = 0; i < numberOfElementsInTest; i++)
     (* addBlockToDynamicTable_h)(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
@@ -263,7 +319,11 @@ int main(int argc, char * argv[]) {
   printf("\tSYST: %f sec\n", timeDifference);
   fprintf(f, "\tSYST: %f sec\n", timeDifference);
 
+  /* Closing handler for file operations */
   fclose(f);
+
+  /* Closing handler for library operations */
+  dlclose(handle);
 
   return 0;
 }
@@ -288,81 +348,16 @@ char * createBlock(int blockSize) {
  * Operation standarise
  */
 char ** createTable(allocationStrategy strategy, int cellsQuantity) {
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  void (* initializeStaticTable_h)();
-  char ** (* createDynamicTable_h)(int cellsQuantity);
-
-  /* Initializing function pointers */
-  initializeStaticTable_h = (void (*)()) dlsym(handle, "initializeStaticTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  createDynamicTable_h = (char ** (*)(int cellsQuantity)) dlsym(handle, "createDynamicTable");;
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /**
-   * Actual function
-   */
   switch (strategy) {
     case STATIC:  (* initializeStaticTable_h)();
-                  /* Closing handler for library */
-                  dlclose(handle);
                   return NULL;
     case DYNAMIC: return (* createDynamicTable_h)(cellsQuantity);
   }
 }
 
 void deleteTable(allocationStrategy strategy, char ** table, int cellsQuantity) {
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  void (* initializeStaticTable_h)();
-  void (* deleteDynamicTable_h)(char ** table, int cellsQuantity);
-
-  /* Initializing function pointers */
-  initializeStaticTable_h = (void (*)()) dlsym(handle, "initializeStaticTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  deleteDynamicTable_h = (void (*)(char ** table, int cellsQuantity)) dlsym(handle, "deleteDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   switch (strategy) {
     case STATIC:  (* initializeStaticTable_h)();
-                  /* Closing handler for library */
-                  dlclose(handle);
                   return;
     case DYNAMIC: (* deleteDynamicTable_h)(table, cellsQuantity);
                   return;
@@ -371,35 +366,6 @@ void deleteTable(allocationStrategy strategy, char ** table, int cellsQuantity) 
 
 int addBlockToTable(allocationStrategy strategy, char ** table,
   int cellsQuantity, char * block, int cell) {
-
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  int (* addBlockToStaticTable_h)(char * block, int cell);
-  int (* addBlockToDynamicTable_h)(char ** table, int cellsQuantity, char * block, int cell);
-
-  /* Initializing function pointers */
-  addBlockToStaticTable_h = (int (*)(char * block, int cell)) dlsym(handle, "addBlockToStaticTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  addBlockToDynamicTable_h = (int (*)(char ** table, int cellsQuantity, char * block, int cell)) dlsym(handle, "addBlockToDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
 
   switch (strategy) {
     case STATIC:  return (* addBlockToStaticTable_h)(block, cell);
@@ -410,35 +376,6 @@ int addBlockToTable(allocationStrategy strategy, char ** table,
 int removeBlockFromTable(allocationStrategy strategy, char ** table,
   int cellsQuantity, int cell) {
 
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  int (* removeBlockFromStaticTable_h)(int cell);
-  int (* removeBlockFromDynamicTable_h)(char ** table, int cellsQuantity, int cell);
-
-  /* Initializing function pointers */
-  removeBlockFromStaticTable_h = (int (*)(int cell)) dlsym(handle, "removeBlockFromStaticTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  removeBlockFromDynamicTable_h = (int (*)(char ** table, int cellsQuantity, int cell)) dlsym(handle, "removeBlockFromDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   switch (strategy) {
     case STATIC:  return (* removeBlockFromStaticTable_h)(cell);
     case DYNAMIC: return (* removeBlockFromDynamicTable_h)(table, cellsQuantity, cell);
@@ -447,35 +384,6 @@ int removeBlockFromTable(allocationStrategy strategy, char ** table,
 
 char * findBlockWithSpecifiedQuantityInTable(allocationStrategy strategy,
   char ** table, int cellsQuantity, int quantity) {
-
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  char * (* findBlockWithSpecifiedQuantityInStaticTable_h)(int quantity);
-  char * (* findBlockWithSpecifiedQuantityInDynamicTable_h)(char ** table, int cellsQuantity, int quantity);
-
-  /* Initializing function pointers */
-  findBlockWithSpecifiedQuantityInStaticTable_h = (char * (*)(int quantity)) dlsym(handle, "findBlockWithSpecifiedQuantityInStaticTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  findBlockWithSpecifiedQuantityInDynamicTable_h = (char * (*)(char ** table, int cellsQuantity, int quantity)) dlsym(handle, "findBlockWithSpecifiedQuantityInDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
 
   switch (strategy) {
     case STATIC:  return (* findBlockWithSpecifiedQuantityInStaticTable_h)(quantity);
@@ -535,36 +443,6 @@ double getTimeCreateTable(clockid_t clk_id, int numberOfElementsInTest, int bloc
   int i;
 
   clock_gettime(clk_id, &timeStart);
-  
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  char ** (* createDynamicTable_h)(int cellsQuantity);
-  int (* addBlockToDynamicTable_h)(char ** table, int cellsQuantity, char * block, int cell);
-
-  /* Initializing function pointers */
-  createDynamicTable_h = (char ** (*)(int cellsQuantity)) dlsym(handle, "createDynamicTable");;
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  addBlockToDynamicTable_h = (int (*)(char ** table, int cellsQuantity, char * block, int cell)) dlsym(handle, "addBlockToDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   testTable = (* createDynamicTable_h)(numberOfElementsInTest);
   for(i = 0; i < numberOfElementsInTest; i++)
     (* addBlockToDynamicTable_h)(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
@@ -578,30 +456,6 @@ double getTimeFindElement(clockid_t clk_id, char ** testTable, int numberOfEleme
   struct timespec timeStart, timeEnd;
 
   clock_gettime(clk_id, &timeStart);
-
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  char * (* findBlockWithSpecifiedQuantityInDynamicTable_h)(char ** table, int cellsQuantity, int quantity);
-
-  /* Initializing function pointers */
-  findBlockWithSpecifiedQuantityInDynamicTable_h = (char * (*)(char ** table, int cellsQuantity, int quantity)) dlsym(handle, "findBlockWithSpecifiedQuantityInDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   (* findBlockWithSpecifiedQuantityInDynamicTable_h)(testTable, numberOfElementsInTest, 0);
   clock_gettime(clk_id, &timeEnd);
   return (timeEnd.tv_sec - timeStart.tv_sec)
@@ -614,36 +468,6 @@ double getTimeDeleteHalfAddHalf(clockid_t clk_id, char ** testTable, int numberO
   int i;
 
   clock_gettime(clk_id, &timeStart);
-
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  int (* addBlockToDynamicTable_h)(char ** table, int cellsQuantity, char * block, int cell);
-  int (* removeBlockFromDynamicTable_h)(char ** table, int cellsQuantity, int cell);
-
-  /* Initializing function pointers */
-  addBlockToDynamicTable_h = (int (*)(char ** table, int cellsQuantity, char * block, int cell)) dlsym(handle, "addBlockToDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  removeBlockFromDynamicTable_h = (int (*)(char ** table, int cellsQuantity, int cell)) dlsym(handle, "removeBlockFromDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   for(i = 0; i < numberOfElementsInTest / 2; i++)
     (* removeBlockFromDynamicTable_h)(testTable, numberOfElementsInTest, i);
   for(i = 0; i < numberOfElementsInTest / 2; i++)
@@ -659,36 +483,6 @@ double getTimeReplaceHalf(clockid_t clk_id, char ** testTable, int numberOfEleme
   int i;
 
   clock_gettime(clk_id, &timeStart);
-
-  /**
-   * Linking library
-   */
-
-  /* Creating handler for linked library */
-  void * handle;
-
-  handle = dlopen("./libLibraryToWorkOnTable.so", RTLD_LAZY);
-  if (!handle) {
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  /* Declaring function pointers */
-  int (* addBlockToDynamicTable_h)(char ** table, int cellsQuantity, char * block, int cell);
-  int (* removeBlockFromDynamicTable_h)(char ** table, int cellsQuantity, int cell);
-
-  /* Initializing function pointers */
-  addBlockToDynamicTable_h = (int (*)(char ** table, int cellsQuantity, char * block, int cell)) dlsym(handle, "addBlockToDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-  removeBlockFromDynamicTable_h = (int (*)(char ** table, int cellsQuantity, int cell)) dlsym(handle, "removeBlockFromDynamicTable");
-  if(dlerror() != NULL){
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
   for(i = 0; i < numberOfElementsInTest / 2; i++) {
     (* removeBlockFromDynamicTable_h)(testTable, numberOfElementsInTest, i);
     (* addBlockToDynamicTable_h)(testTable, numberOfElementsInTest, createBlock(blockSizeInTest), i);
