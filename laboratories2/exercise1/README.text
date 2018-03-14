@@ -1,0 +1,6 @@
+Sorting:
+  Sorting with standard library is faster for lower sized records.
+  From 4096-sized record it is better to use system functions.
+
+Coping:
+  Standard library is much better than system functions for coping.
