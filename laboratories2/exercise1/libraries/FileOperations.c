@@ -210,23 +210,3 @@ void copyLib(char * fileInputName, char * fileOutputName, int recSize) {
   fclose(fileInput);
   fclose(fileOutput);
 }
-
-/**
- * Main function
- */
-int main(int argc, char * argv[]) {
-  /* Setting dependation for random number generator */
-  srand(time(NULL));
-
-  // Below works
-  generateSys("test.txt", 5, 5);
-  copySys("test.txt", "copy.txt", 5);
-  sortSys("copy.txt", 5, 5);
-
-  generateLib("testLib.txt", 5, 5);
-  copyLib("testLib.txt", "copyLib.txt", 5);
-  sortLib("copyLib.txt", 5, 5);
-
-  // printf("%s\n", createRecord(5));
-  return 0;
-}
