@@ -19,7 +19,7 @@
 #include <string.h>
 
 typedef enum {
-  GENERATE = 'g',
+  GENE = 'g',
   SORT = 's',
   COPY = 'c'
   }
@@ -69,13 +69,13 @@ int main(int argc, char * argv[]) {
     return -2;
   /* Parse the rest variables based on type of operation */
   switch(operation) {
-    case 'g'  :
-    case 's'  : file = argv[2];
+    case GENE :
+    case SORT : file = argv[2];
                 recQuan = atoi(argv[3]);
                 recSize = atoi(argv[4]);
                 parseOperationStrategy(&strategy, argv[5]);
                 break;
-    case 'c'  : fileInput = argv[2];
+    case COPY : fileInput = argv[2];
                 fileOutput = argv[3];
                 recSize = atoi(argv[4]);
                 parseOperationStrategy(&strategy, argv[5]);
@@ -86,11 +86,11 @@ int main(int argc, char * argv[]) {
   srand(time(NULL));
 
   switch(operation) {
-    case 'g'  : generate(strategy, file, recQuan, recSize);
+    case GENE : generate(strategy, file, recQuan, recSize);
                 break;
-    case 's'  : sort(strategy, file, recQuan, recSize);
+    case SORT : sort(strategy, file, recQuan, recSize);
                 break;
-    case 'c'  : copy(strategy, fileInput, fileOutput, recSize);
+    case COPY : copy(strategy, fileInput, fileOutput, recSize);
                 break;
   }
 
@@ -102,27 +102,27 @@ int main(int argc, char * argv[]) {
  */
 void generate(operationStrategy strategy, char * fileName, int recQuan, int recSize) {
   switch(strategy) {
-    case 's' :  generateSys(fileName, recQuan, recSize);
+    case SYS :  generateSys(fileName, recQuan, recSize);
                 break;
-    case 'l' :  generateLib(fileName, recQuan, recSize);
+    case LIB :  generateLib(fileName, recQuan, recSize);
                 break;
   }
 }
 
 void sort(operationStrategy strategy, char * fileName, int recQuan, int recSize) {
  switch(strategy) {
-   case 's' :  sortSys(fileName, recQuan, recSize);
+   case SYS :  sortSys(fileName, recQuan, recSize);
                break;
-   case 'l' :  sortLib(fileName, recQuan, recSize);
+   case LIB :  sortLib(fileName, recQuan, recSize);
                break;
   }
 }
 
 void copy(operationStrategy strategy, char * fileInputName, char * fileOutputName, int recSize) {
  switch(strategy) {
-   case 's' :  copySys(fileInputName, fileOutputName, recSize);
+   case SYS :  copySys(fileInputName, fileOutputName, recSize);
                break;
-   case 'l' :  copyLib(fileInputName, fileOutputName, recSize);
+   case LIB :  copyLib(fileInputName, fileOutputName, recSize);
                break;
   }
 }
@@ -132,7 +132,7 @@ void copy(operationStrategy strategy, char * fileInputName, char * fileOutputNam
  */
 int parseTypeOfOperation(typeOfOperation * operation, char * arg) {
   switch(arg[0]) {
-    case 'g'  : * operation = GENERATE;
+    case 'g'  : * operation = GENE;
                 return 0;
     case 's'  : * operation = SORT;
                 return 0;
