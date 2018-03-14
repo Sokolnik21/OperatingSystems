@@ -7,6 +7,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+/* Standard library to work on files */
+#include <stdio.h>
+
 /* Base libraries */
 #include <time.h>
 #include <stdlib.h>
@@ -14,8 +17,6 @@
 
 /* Comparing Strings */
 #include <string.h>
-/* Test */
-#include <stdio.h>
 
 /**
  To use this function it is needed to set dependation
@@ -138,7 +139,77 @@ void copySys(char * fileInputName, char * fileOutputName, int recSize) {
 /**
 * Part of the exercise that works with system functions
 */
-void generateLib();
+void generateLib(char * fileName, int recQuan, int recSize) {
+  FILE * file;
+  file = fopen(fileName, "w");
+
+  int i;
+  for(i = 0; i < recQuan; i++) {
+    fwrite(createRecord(recSize), 1, (recSize + 1), file);
+  }
+
+  fclose(file);
+}
+
+void sortLib(char * fileName, int recQuan, int recSize) {
+  /* Add place for '\n' char */
+  int rowSize = recSize + 1;
+  int FROM_BEGIN = 0;
+
+  FILE * file;
+  file = fopen(fileName, "r+");
+
+  char * bufferBest = calloc(recSize, sizeof(char));
+  char * bufferTmp = calloc(recSize, sizeof(char));
+  int bestCell;
+
+  int i;
+  for(i = 0; i < recQuan - 1; i++) {  // There is no need to iterate last cell
+    bestCell = i;
+    fseek(file, i * rowSize, FROM_BEGIN);
+    fread(bufferBest, 1, recSize * sizeof(char), file);
+    int j;
+    for(j = i + 1; j < recQuan; j++) {
+      fseek(file, j * rowSize, FROM_BEGIN);
+      fread(bufferTmp, 1, recSize * sizeof(char), file);
+      /* If(bufferBest > bufferTmp) */
+      if(compareRecords(bufferBest, bufferTmp, recSize) == 1) {
+        bestCell = j;
+        strcpy(bufferBest, bufferTmp);
+      }
+    }
+    /* Swap records */
+    if(bestCell != i) {
+      fseek(file, i * rowSize, FROM_BEGIN);
+      fread(bufferTmp, 1, recSize * sizeof(char), file);
+
+      fseek(file, i * rowSize, FROM_BEGIN);
+      fwrite(bufferBest, 1, recSize * sizeof(char), file);
+
+      fseek(file, bestCell * rowSize, FROM_BEGIN);
+      fwrite(bufferTmp, 1, recSize * sizeof(char), file);
+    }
+  }
+
+  free(bufferBest);
+  free(bufferTmp);
+  fclose(file);
+}
+
+void copyLib(char * fileInputName, char * fileOutputName, int recSize) {
+  FILE * fileInput;
+  FILE * fileOutput;
+  fileInput = fopen(fileInputName, "r");
+  fileOutput = fopen(fileOutputName, "w");
+
+  char * buffer = calloc(recSize, sizeof(char));
+  while(fread(buffer, 1, (recSize + 1), fileInput) > 0)
+    fwrite(buffer, 1, (recSize + 1), fileOutput);
+
+  free(buffer);
+  fclose(fileInput);
+  fclose(fileOutput);
+}
 
 /**
  * Main function
@@ -147,10 +218,15 @@ int main(int argc, char * argv[]) {
   /* Setting dependation for random number generator */
   srand(time(NULL));
 
+  // Below works
   generateSys("test.txt", 5, 5);
-
   copySys("test.txt", "copy.txt", 5);
   sortSys("copy.txt", 5, 5);
+
+  generateLib("testLib.txt", 5, 5);
+  copyLib("testLib.txt", "copyLib.txt", 5);
+  sortLib("copyLib.txt", 5, 5);
+
   // printf("%s\n", createRecord(5));
   return 0;
 }

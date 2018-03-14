@@ -5,4 +5,4 @@ run:
 	./FileOperations.out
 
 delete:
-	rm *.out
+	rm *.out *.txt

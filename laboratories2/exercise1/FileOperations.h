@@ -23,6 +23,8 @@ void copySys(char * fileInputName, char * fileOutputName, int recSize);
 /**
  * Part of the exercise that works with system functions
  */
-void generateLib();
+void generateLib(char * fileName, int recQuan, int recSize);
+void sortLib(char * fileName, int recQuan, int recSize);
+void copyLib(char * fileInputName, char * fileOutputName, int recSize);
 
 #endif
