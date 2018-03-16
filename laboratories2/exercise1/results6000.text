@@ -1,0 +1,80 @@
+<><><><><><><><><><><><>
+	Sort
+<><><><><><><><><><><><>
+4-size record
+SystemFunctionsTest
+0:06.89	REAL
+0.99	USER
+5.87	SYS
+StandardLibraryTest
+0:02.21	REAL
+1.15	USER
+1.06	SYS
+512-size record
+SystemFunctionsTest
+0:08.15	REAL
+1.03	USER
+7.10	SYS
+StandardLibraryTest
+0:05.32	REAL
+2.52	USER
+2.78	SYS
+4096-size record
+SystemFunctionsTest
+0:18.11	REAL
+1.01	USER
+17.08	SYS
+StandardLibraryTest
+0:24.52	REAL
+2.19	USER
+22.30	SYS
+8192-size record
+SystemFunctionsTest
+0:28.43	REAL
+1.04	USER
+27.36	SYS
+StandardLibraryTest
+0:35.46	REAL
+2.30	USER
+33.13	SYS
+
+<><><><><><><><><><><><>
+	Copy
+<><><><><><><><><><><><>
+4-size record
+SystemFunctionsTest
+0:00.01	REAL
+0.00	USER
+0.00	SYS
+StandardLibraryTest
+0:00.00	REAL
+0.00	USER
+0.00	SYS
+512-size record
+SystemFunctionsTest
+0:01.00	REAL
+0.01	USER
+0.97	SYS
+StandardLibraryTest
+0:00.00	REAL
+0.00	USER
+0.00	SYS
+4096-size record
+SystemFunctionsTest
+0:08.15	REAL
+0.21	USER
+7.92	SYS
+StandardLibraryTest
+0:00.04	REAL
+0.00	USER
+0.03	SYS
+8192-size record
+SystemFunctionsTest
+0:16.68	REAL
+0.32	USER
+16.32	SYS
+StandardLibraryTest
+0:00.07	REAL
+0.00	USER
+0.06	SYS
+

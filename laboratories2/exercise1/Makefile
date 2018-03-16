@@ -1,4 +1,4 @@
-RECORDS = 5000
+RECORDS = 6000
 
 compile:
 	gcc FileOperationsParser.c libraries/FileOperations.c -o FileOperationsParser.out
@@ -137,6 +137,7 @@ libTestCopy8192:
 	cat TmpTime.txt >> results.text
 
 result:
+	make compile
 	touch results.text
 	rm results.text
 	echo "<><><><><><><><><><><><>" >> results.text
@@ -195,6 +196,7 @@ result:
 	echo "StandardLibraryTest" >> results.text
 	make libTestCopy8192
 	echo >> results.text
+	make remove
 
 remove:
 	rm *.out *.txt
