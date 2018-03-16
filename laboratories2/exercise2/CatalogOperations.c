@@ -15,13 +15,19 @@ void describeFile(struct stat buffer, char * path);
 char * formatDate(char * str, time_t val);
 char * getMode(long int mode);
 
-void recursiveCatalogSearch(char * currDirName, char * showFilePath) {
-  char * currPath = ".";
-  char bufPath[1024];
-  strcpy(bufPath, currPath);
+void recursiveCatalogSearch(char * currDirName, char * prevFilePath);
 
-  char sfp[1024];
-  strcpy(sfp, showFilePath);
+int main(int argc, char * argv[]) {
+  char bufPath[1024];
+  strcpy(bufPath, "./"); //Here will be 1. argument instead of "."
+  // strcpy(bufPath, "/home/michal/Desktop/Semestr 4/Systemy Operacyjne/OperatingSystems/laboratories2/exercise2/");
+
+  recursiveCatalogSearch(bufPath, bufPath);
+}
+
+void recursiveCatalogSearch(char * currDirName, char * prevFilePath) {
+  char filePath[1024];
+  strcpy(filePath, prevFilePath);
 
   DIR * dirp;
   dirp = opendir(currDirName);
@@ -34,43 +40,29 @@ void recursiveCatalogSearch(char * currDirName, char * showFilePath) {
   while((dirStruct = readdir(dirp)) != NULL) {
     if(dirStruct -> d_type == DT_REG) {
       stat(dirStruct -> d_name, &buffer);
+
       char tmpFile[1024];
-      strcpy(tmpFile, sfp);
+      strcpy(tmpFile, filePath);
       strcat(tmpFile, dirStruct -> d_name);
       describeFile(buffer, tmpFile);
     }
     if(dirStruct -> d_type == DT_DIR) {
       if(dirStruct -> d_name[0] == '.') // Get rid of . and ..
         continue;
-      char tmpPath[1024];
-      strcpy(tmpPath, bufPath);
-      strcat(tmpPath, "/");
-      strcat(tmpPath, dirStruct -> d_name);
+      char nextDirName[1024];
+      strcpy(nextDirName, "./");
+      strcat(nextDirName, dirStruct -> d_name);
 
-      char tmpDir[1024];
-      strcpy(tmpDir, "./");
-      strcat(tmpDir, dirStruct -> d_name);
+      strcpy(filePath, prevFilePath); // Set filePath for current value
+      strcat(filePath, dirStruct -> d_name);
+      strcat(filePath, "/");
 
-      strcpy(sfp, showFilePath);//
-      strcat(sfp, dirStruct -> d_name);
-      strcat(sfp, "/");
-
-      recursiveCatalogSearch(tmpDir, sfp);
+      recursiveCatalogSearch(nextDirName, filePath);
       chdir("..");
     }
   }
-
   closedir(dirp);
 }
-
-int main(int argc, char * argv[]) {
-  char bufPath[1024];
-  strcpy(bufPath, "."); //Here will be 1. argument instead of "."
-  // strcpy(bufPath, "/home/michal/Desktop/Semestr 4/Systemy Operacyjne/OperatingSystems/laboratories2/exercise2");
-
-  recursiveCatalogSearch("./", "./");
-}
-
 
 void describeFile(struct stat buffer, char * path) {
   printf("%7.ld ", buffer.st_size);
