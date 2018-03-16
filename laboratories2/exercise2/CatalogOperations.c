@@ -12,64 +12,53 @@
 #include <time.h>
 
 void describeFile(struct stat buffer, char * path);
-char * formatdate(char * str, time_t val);
+char * formatDate(char * str, time_t val);
 char * getMode(long int mode);
 
-// void recursiveCatalogSearch(char * currPath, DIR * dirp) {
-void recursiveCatalogSearch(char * currPath) {
-  // if(currPath != ".") {
-  //   chdir("..");
-  // }
-  if(!(currPath[0] == '.' && currPath[1] == '\0')) {
-    // chdir("..");
-    printf("Hello\n");
-    printf("[%s]\n", currPath);
-  }
-
-
+void recursiveCatalogSearch(char * currDirName, char * showFilePath) {
+  char * currPath = ".";
   char bufPath[1024];
   strcpy(bufPath, currPath);
 
-  DIR * dirp;
-  dirp = opendir(bufPath);
-  chdir(bufPath);
+  char sfp[1024];
+  strcpy(sfp, showFilePath);
 
-  // printf("[%s]\n", bufPath);
+  DIR * dirp;
+  dirp = opendir(currDirName);
+
+  chdir(currDirName);
 
   struct dirent * dirStruct;
   struct stat buffer;
 
   while((dirStruct = readdir(dirp)) != NULL) {
-    // dirp = opendir(bufPath);
-    // chdir(bufPath);
-
     if(dirStruct -> d_type == DT_REG) {
-        // printf("[%s]\n", bufPath);
-
       stat(dirStruct -> d_name, &buffer);
       char tmpFile[1024];
-      strcpy(tmpFile, bufPath);
-      strcat(tmpFile, "/");
+      strcpy(tmpFile, sfp);
       strcat(tmpFile, dirStruct -> d_name);
-      // printf("%s\n", tmpFile);
       describeFile(buffer, tmpFile);
     }
     if(dirStruct -> d_type == DT_DIR) {
       if(dirStruct -> d_name[0] == '.') // Get rid of . and ..
         continue;
-      // printf("Catalog: %s\n", dirStruct -> d_name);
       char tmpPath[1024];
       strcpy(tmpPath, bufPath);
       strcat(tmpPath, "/");
       strcat(tmpPath, dirStruct -> d_name);
-      // printf("%s\n", tmpPath);
-      recursiveCatalogSearch(tmpPath);
+
+      char tmpDir[1024];
+      strcpy(tmpDir, "./");
+      strcat(tmpDir, dirStruct -> d_name);
+
+      strcpy(sfp, showFilePath);//
+      strcat(sfp, dirStruct -> d_name);
+      strcat(sfp, "/");
+
+      recursiveCatalogSearch(tmpDir, sfp);
+      chdir("..");
     }
   }
-
-  // dirp = opendir("..");
-  /******/
-  chdir("..");
 
   closedir(dirp);
 }
@@ -77,45 +66,9 @@ void recursiveCatalogSearch(char * currPath) {
 int main(int argc, char * argv[]) {
   char bufPath[1024];
   strcpy(bufPath, "."); //Here will be 1. argument instead of "."
+  // strcpy(bufPath, "/home/michal/Desktop/Semestr 4/Systemy Operacyjne/OperatingSystems/laboratories2/exercise2");
 
-  recursiveCatalogSearch(bufPath);
-
-  // DIR * dirp;
-  // dirp = opendir(bufPath);
-  // chdir(bufPath);
-  //
-  // struct dirent * dirStruct;
-  // struct stat buffer;
-  //
-  // while((dirStruct = readdir(dirp)) != NULL) {
-  //   if(dirStruct -> d_type == DT_REG) {
-  //     stat(dirStruct -> d_name, &buffer);
-  //     char tmpFile[1024];
-  //     int i;
-  //     for(i = 0; i < 1024; i++)
-  //       tmpFile[i] = 0;
-  //     strcpy(tmpFile, bufPath);
-  //     strcat(tmpFile, "/");
-  //     strcat(tmpFile, dirStruct -> d_name);
-  //     describeFile(buffer, tmpFile);
-  //   }
-  //   if(dirStruct -> d_type == DT_DIR) {
-  //     if(dirStruct -> d_name[0] == '.') // Get rid of . and ..
-  //       continue;
-  //     printf("Catalog: %s\n", dirStruct -> d_name);
-  //     char tmpPath[1024];
-  //     int i;
-  //     for(i = 0; i < 1024; i++)
-  //       tmpPath[i] = 0;
-  //     strcpy(tmpPath, bufPath);
-  //     strcat(tmpPath, "/");
-  //     strcat(tmpPath, dirStruct -> d_name);
-  //     printf("%s\n", tmpPath);
-  //     recursiveCatalogSearch(tmpPath);
-  //   }
-  // }
-
-  // closedir(dirp);
+  recursiveCatalogSearch("./", "./");
 }
 
 
@@ -123,7 +76,7 @@ void describeFile(struct stat buffer, char * path) {
   printf("%7.ld ", buffer.st_size);
   printf("%s ", getMode(buffer.st_mode));
   char date[20];
-  printf("%s ", formatdate(date, buffer.st_mtime));
+  printf("%s ", formatDate(date, buffer.st_mtime));
   printf("%s\n", path);
 }
 
@@ -152,7 +105,7 @@ char * getMode(long int mode) {
 }
 
 /* Stack overflow */
-char * formatdate(char * str, time_t val) {
+char * formatDate(char * str, time_t val) {
   strftime(str, 20, "%d.%m.%Y %H:%M:%S", localtime(&val));
   return str;
 }
