@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 500
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,6 +10,12 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+// for nftw
+#include <ftw.h>
+#include <stdint.h>
+
+#include <limits.h>
+
 typedef enum {
   LOWER   = '<',
   HIGHER  = '>',
@@ -16,16 +24,20 @@ typedef enum {
   }
 typeOfComparision;
 
-void recursiveCatalogSearch(char * currDirName, char * prevFilePath, char * timeVal, typeOfComparision comparision);
+/* Global variables */
+typeOfComparision comparision;
+char timeVal[20];
+
+int process(const char * file, const struct stat * sb, int flag, struct FTW * s);
 
 /**
  * Describing file
  */
-void describeFile(struct stat buffer, char * path);
+void describeFile(const struct stat * buffer, char * path);
 char * formatDate(char * str, time_t val);
 char * getMode(long int mode);
-// Check wheter file comply with requirements
-int compareTime(struct stat buffer, char * timeVal, typeOfComparision comparision);
+// Check whether file meets requirements
+int compareTime(const struct stat * buffer, char * timeVal, typeOfComparision comparision);
 
 /**
  * Parsing functions
@@ -44,71 +56,44 @@ int main(int argc, char * argv[]) {
 
   /* Variables */
   char bufPath[1024];
-  char pathPrefix[PATH_MAX];
-  typeOfComparision comparision;
-  char timeVal[20];
+  // typeOfComparision comparision;
+  // char timeVal[20];
 
   /* Parsing variables */
   strcpy(bufPath, argv[1]);
   parseTypeOfComparision(&comparision, argv[2]);
   strcpy(timeVal, argv[3]);
 
-  /* Updating pathPrefix */
-  realpath(bufPath, pathPrefix);
-  strcat(pathPrefix, "/");
+  nftw(bufPath, process, 1, FTW_CHDIR | FTW_PHYS);
 
-  recursiveCatalogSearch(bufPath, pathPrefix, timeVal, comparision); //pathPrefix = "./" || ""
+  return 0;
 }
 
-void recursiveCatalogSearch(char * currDirName, char * prevFilePath, char * timeVal, typeOfComparision comparision) {
-  char filePath[1024];
-  strcpy(filePath, prevFilePath);
+int process(const char * file, const struct stat * sb, int flag, struct FTW * s) {
+	const char * name = file + s -> base;
 
-  DIR * dirp;
-  dirp = opendir(currDirName);
+  char pathPrefix[PATH_MAX];
+  realpath(".", pathPrefix);
+  strcat(pathPrefix, "/");
 
-  chdir(currDirName);
-
-  struct dirent * dirStruct;
-  struct stat buffer;
-
-  while((dirStruct = readdir(dirp)) != NULL) {
-    if(dirStruct -> d_type == DT_REG) {
-      stat(dirStruct -> d_name, &buffer);
-      // Check wheter file meets requirements
-      if(compareTime(buffer, timeVal, comparision) == 0) {
-        char tmpFile[1024];
-        strcpy(tmpFile, filePath);
-        strcat(tmpFile, dirStruct -> d_name);
-        describeFile(buffer, tmpFile);
-      }
-    }
-    if(dirStruct -> d_type == DT_DIR) {
-      if(dirStruct -> d_name[0] == '.') // Get rid of . and ..
-        continue;
-      char nextDirName[1024];
-      strcpy(nextDirName, "./");
-      strcat(nextDirName, dirStruct -> d_name);
-
-      strcpy(filePath, prevFilePath); // Set filePath for current value
-      strcat(filePath, dirStruct -> d_name);
-      strcat(filePath, "/");
-
-      recursiveCatalogSearch(nextDirName, filePath, timeVal, comparision);
-      chdir("..");
+  if(flag == FTW_F) {
+    if(compareTime(sb, timeVal, comparision) == 0) {
+      strcat(pathPrefix, name);
+      describeFile(sb, pathPrefix);
     }
   }
-  closedir(dirp);
+
+	return 0;
 }
 
 /**
  * Describing file
  */
-void describeFile(struct stat buffer, char * path) {
-  printf("%7.ld ", buffer.st_size);
-  printf("%s ", getMode(buffer.st_mode));
+void describeFile(const struct stat * buffer, char * path) {
+  printf("%7.ld ", buffer -> st_size);
+  printf("%s ", getMode(buffer -> st_mode));
   char date[20];
-  printf("%s ", formatDate(date, buffer.st_mtime));
+  printf("%s ", formatDate(date, buffer -> st_mtime));
   printf("%s\n", path);
 }
 
@@ -142,10 +127,10 @@ char * formatDate(char * str, time_t val) {
   return str;
 }
 
-// Check wheter file comply with requirements
-int compareTime(struct stat buffer, char * timeVal, typeOfComparision comparision) {
+// Check whether file meets requirements
+int compareTime(const struct stat * buffer, char * timeVal, typeOfComparision comparision) {
   char fileTime[20];
-  formatDate(fileTime, buffer.st_mtime);
+  formatDate(fileTime, buffer -> st_mtime);
 
   int result;
 
