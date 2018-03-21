@@ -73,6 +73,8 @@ void recursiveCatalogSearch(char * currDirName, char * prevFilePath, char * time
   struct stat buffer;
 
   while((dirStruct = readdir(dirp)) != NULL) {
+    // Return to previous path
+    strcpy(filePath, prevFilePath);
     if(dirStruct -> d_type == DT_REG) {
       stat(dirStruct -> d_name, &buffer);
       // Check wheter file meets requirements
