@@ -1,0 +1,4 @@
+cat CommandInterpreter.c
+ls -l
+ls -l -C
+ps --forest
