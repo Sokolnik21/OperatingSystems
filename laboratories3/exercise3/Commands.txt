@@ -1,0 +1,8 @@
+cat Makefile
+ls -l
+ls -l -C
+
+
+ps --forest
+zaliczenie
+cat test.txt
