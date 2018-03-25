@@ -1,7 +1,11 @@
 cat Makefile
 ls -l
 ls -l -C
-
-
+sleep 1
 ps --forest
+
+
+./testPrograms/a.out
+./testPrograms/GreedyProgram.out
+
 cat test.txt
