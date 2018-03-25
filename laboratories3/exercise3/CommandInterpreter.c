@@ -8,19 +8,23 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+// limits
+#include <sys/resource.h>
+
 // Split string
 #include <string.h>
 
 #define MAX_INNER_PROG_ARGS 10
+#define MILLION 1E6
 
 /**
   Main
  */
 int main(int argc, char * argv[]) {
   /* Checking amount of arguments */
-  if(argc != 2) {
+  if(argc != 4) {
     printf("Wrong amount of arguments\n");
-    return -1;
+    return -2;
   }
 
   /* Variables */
@@ -32,9 +36,17 @@ int main(int argc, char * argv[]) {
   char * line = NULL;
   size_t len = 0;
   ssize_t read;
+  // To handle limits
+  struct rlimit cpuLimit;
+  struct rlimit memLimit;
 
   /* Parsing variables */
   strcpy(filePath, argv[1]);
+  // Limits
+  cpuLimit.rlim_cur = atoi(argv[2]);
+  cpuLimit.rlim_max = atoi(argv[2]);
+  memLimit.rlim_cur = MILLION * atoi(argv[3]);
+  memLimit.rlim_max = MILLION * atoi(argv[3]);
 
   /* Setting file handler */
   FILE * f = fopen(filePath, "r");
@@ -43,7 +55,7 @@ int main(int argc, char * argv[]) {
       exit(1);
   }
 
-  /* Get ever line from file and */
+  /* Get every line from file and parse them into table */
   while ((read = getline(&line, &len, f)) != -1) {
     if(line[0] == '\n' || line[0] == ' ' || line[0] == '\t')
       continue;
@@ -56,6 +68,7 @@ int main(int argc, char * argv[]) {
     char * word;
     word = strtok(tmpLine,"\n ");
 
+    // Filling table that stores command arguments
     int i = 0;
     while(word != NULL) {
       innerProgArgs[i] = malloc(sizeof(word));
@@ -67,6 +80,10 @@ int main(int argc, char * argv[]) {
     pid_t cpid = fork();
     waitpid(cpid, &status, WUNTRACED | WCONTINUED);
     if(cpid == 0) {
+      // Setting limits for child process
+      setrlimit(RLIMIT_CPU, &cpuLimit);
+      setrlimit(RLIMIT_AS, &memLimit);
+      // Executing line from file
       execvp(innerProgArgs[0], innerProgArgs);
       // Error handler - if above instruction returns with error
       // then instructions below will be executed
