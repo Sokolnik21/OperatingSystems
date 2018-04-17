@@ -1,0 +1,8 @@
+cat Makefile
+ls -l
+ls -l -C
+ps --forest
+
+
+ls -l | ls -l
+cat test.txt
