@@ -14,8 +14,11 @@
 // PATH_MAX
 #include <limits.h>
 
+#include <time.h>
+
 #define MAX_WORDS_IN_COMMAND 10
 #define MAX_NUMBER_OF_COMMANDS_IN_LINE 10
+#define MAX_PREVIOUS_OUTPUT 500
 
 const char * EOA = "END_OF_ARGUMENTS";
 
@@ -44,7 +47,9 @@ int main(int argc, char * argv[]) {
   // To work with file
   char * line = malloc(PATH_MAX * sizeof(char));
   size_t len = 0;
-  ssize_t read;
+  ssize_t readLine;
+  // Pipe buffer
+  char * previousOut = malloc(MAX_PREVIOUS_OUTPUT * sizeof(char));
 
   /* Parsing variables */
   strcpy(filePath, argv[1]);
@@ -57,9 +62,11 @@ int main(int argc, char * argv[]) {
   }
 
   /* Get every line from file and parse it */
-  while ((read = getline(&line, &len, f)) != -1) {
+  while ((readLine = getline(&line, &len, f)) != -1) {
     if(line[0] == '\n' || line[0] == ' ' || line[0] == '\t')
       continue;
+    char * tmpLine = malloc(sizeof(line));
+    strcpy(tmpLine, line);
     /* Split string at every " " or "\n" */
     char * word;
     word = strtok(line,"\n ");
@@ -99,7 +106,6 @@ int main(int argc, char * argv[]) {
     lineCommands[lineCommandNumber + 1][0] = malloc(sizeof(EOA));
     strcpy(lineCommands[lineCommandNumber + 1][0], EOA);
 
-
     // Working start
     int x, y;
     for(x = 0; strcmp(lineCommands[x][0], EOA) != 0; x++) {
@@ -117,14 +123,51 @@ int main(int argc, char * argv[]) {
 
       /* Exec function start */
       int status;
+      int fdChldIn[2];
+      int fdChldOut[2];
+      pipe(fdChldIn);
+      pipe(fdChldOut);
       pid_t cpid = fork();
-      waitpid(cpid, &status, WUNTRACED | WCONTINUED);
+      /* Child */
+      if(cpid == 0) {
+        /* fdChldIn - update standard input */
+        close(fdChldIn[1]);
+        dup2(fdChldIn[0], STDIN_FILENO);
+        close(fdChldIn[0]);
+
+        /* fdChldOut - update standard output */
+        close(fdChldOut[0]);
+        if(strcmp(lineCommands[x + 1][0], EOA) == 0) {
+          dup2(STDOUT_FILENO, fdChldOut[1]);
+          close(fdChldOut[1]);
+        }
+        else {
+          dup2(fdChldOut[1], STDOUT_FILENO);
+          close(fdChldOut[1]);
+        }
+      }
+      /* Parent */
+      else {
+        /* fdChldIn */
+        close(fdChldIn[0]);
+        write(fdChldIn[1], previousOut, MAX_PREVIOUS_OUTPUT);
+        close(fdChldIn[1]);
+        /* fdChldOut */
+        close(fdChldOut[1]);
+        int iterNew;
+        for(iterNew = 0; iterNew < MAX_PREVIOUS_OUTPUT; iterNew++)
+          previousOut[iterNew] = 0;
+        read(fdChldOut[0], previousOut, MAX_PREVIOUS_OUTPUT);
+        close(fdChldOut[0]);
+      }
+      if(cpid != 0)
+        waitpid(cpid, &status, WUNTRACED | WCONTINUED);
       if(cpid == 0) {
         execvp(execArgs[0], execArgs);
         // Error handler - if above instruction returns with error
         // then instructions below will be executed
         printf("\nError in execlp() function\n");
-        printf("Incorrect line: %s\n", line);
+        printf("Incorrect line: %s\n", tmpLine);
         return -1;
       }
       // Error handler part 2 - if above function execvp() returns Error

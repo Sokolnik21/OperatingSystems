@@ -1,8 +1,5 @@
-cat Makefile
-ls -l
-ls -l -C
-ps --forest
-
-
-ls -l | ls -l
-cat test.txt
+cat Makefile | wc -l
+cat Makefile | tac
+ls -l | wc -l
+ls -l | tac | cat Makefile | ls -l | wc -l
+ls

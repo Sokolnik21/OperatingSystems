@@ -4,8 +4,5 @@ compile:
 run:
 	./CommandInterpreter.out Commands.txt
 
-test:
-	./CommandInterpreter.out test.txt
-
 delete:
 	rm *.out
