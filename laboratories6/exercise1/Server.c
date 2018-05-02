@@ -10,6 +10,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 /* Constants */
 #include "ServerConstants.h"
 
@@ -20,6 +21,11 @@ int main(int argc, char * argv[]) {
   key_t serverQueueKey;
   int msgid;
   struct msgbuf communicat;
+  struct msgbuf respond;
+  int pidToMsgid[2][MAX_CLIENTS];
+  int iterClients;
+  for(iterClients = 0; iterClients < MAX_CLIENTS; iterClients++)
+    pidToMsgid[0][iterClients] = -1;
 
   /* Set key generator seed */
   char * pathName = malloc(PATH_MAX * sizeof(char));
@@ -35,30 +41,105 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  printf("%d\n", msgid);
-
   /* Wait for signal */
   while(1) {
     if(msgrcv(msgid, &communicat, sizeof(communicat.mtext), GET_LATEST, MSG_NOERROR) == -1) {
       endWithError(-1);
     }
-    printf("%ld\n", communicat.mtype);
-    printf("%s\n", communicat.mtext);
+    switch(communicat.mtype) {
+      case CLI_QUEUE :
+        for(iterClients = 0; iterClients < MAX_CLIENTS; iterClients++)
+          if(pidToMsgid[0][iterClients] == -1) {
+            pidToMsgid[0][iterClients] = communicat.pid;
+            pidToMsgid[1][iterClients] = atoi(communicat.mtext);
+
+            respond.mtype = CLI_QUEUE;
+            respond.pid = getpid();
+            sprintf(respond.mtext, "%d", iterClients);
+
+            if(msgsnd(pidToMsgid[1][iterClients], &respond, MSGMAX, MSG_NOERROR) == -1) {
+              endWithError(-1);
+            }
+            break;
+          }
+        break;
+      case MIRROR :
+        for(iterClients = 0; iterClients < MAX_CLIENTS; iterClients++)
+          if(pidToMsgid[0][iterClients] == communicat.pid) {
+            /* Code here */
+            respond.mtype = MIRROR;
+            respond.pid = getpid();
+            int length = strlen(communicat.mtext);
+            int currChar;
+            for(currChar = 0; currChar < length; currChar++) {
+              respond.mtext[currChar] = communicat.mtext[length - currChar - 1];
+            }
+            respond.mtext[length] = '\0';
+
+            if(msgsnd(pidToMsgid[1][iterClients], &respond, MSGMAX, MSG_NOERROR) == -1) {
+              endWithError(-1);
+            }
+          }
+        break;
+      case CALC :
+        for(iterClients = 0; iterClients < MAX_CLIENTS; iterClients++)
+          if(pidToMsgid[0][iterClients] == communicat.pid) {
+            /* Code here */
+            respond.mtype = CALC;
+            respond.pid = getpid();
+            int operand1, operand2, result;
+            char sign;
+            sscanf(communicat.mtext, "%d%c%d", &operand1, &sign, &operand2);
+            switch(sign) {
+              case '+' :
+                result = operand1 + operand2;
+                break;
+              case '-' :
+                result = operand1 - operand2;
+                break;
+              case '*' :
+                result = operand1 * operand2;
+                break;
+              case '/' :
+                result = operand1 / operand2;
+                break;
+            }
+            sprintf(respond.mtext, "%d", result);
+
+            if(msgsnd(pidToMsgid[1][iterClients], &respond, MSGMAX, MSG_NOERROR) == -1) {
+              endWithError(-1);
+            }
+          }
+        break;
+      case TIME :
+        for(iterClients = 0; iterClients < MAX_CLIENTS; iterClients++)
+          if(pidToMsgid[0][iterClients] == communicat.pid) {
+            /* Code here */
+            respond.mtype = TIME;
+            respond.pid = getpid();
+            time_t timer;
+            time(&timer);
+            struct tm * tm_info = localtime(&timer);
+            strftime(respond.mtext, MSGMAX, "%Y-%m-%d %H:%M:%S", tm_info);
+
+            if(msgsnd(pidToMsgid[1][iterClients], &respond, MSGMAX, MSG_NOERROR) == -1) {
+              endWithError(-1);
+            }
+          }
+        break;
+      case END :
+        for(iterClients = 0; iterClients < MAX_CLIENTS; iterClients++)
+          if(pidToMsgid[0][iterClients] == communicat.pid) {
+            /* Code here */
+            if(msgctl(msgid, IPC_RMID, 0) == -1) {
+              endWithError(-1);
+            }
+            exit(0);
+          }
+        break;
+
+    }
   }
-
-
-  /* Get signal */
-  // struct msqid_ds receive;
-  struct msgbuf receive;
-
-  // sleep(6);
-  //
-  // while(1) {
-    // int a = msgctl(msgid, IPC_STAT, &receive);
-    // printf("%d\n", a);
-    // printf("%d\n", receive.mtext);
-  //   sleep(1);
-  // }
   return 0;
 }
 
