@@ -8,4 +8,7 @@ run:
 	./Server.out
 
 xrun:
-	./Client.out
+	./Client.out Commands.txt
+
+delete:
+	rm *.out
