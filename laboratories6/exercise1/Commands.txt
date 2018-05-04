@@ -2,4 +2,5 @@ MIRROR Ziggy plays guitar
 CALC 2+2
 CALC 4-1
 TIME
+MIRROR Mikhail Tal
 END

@@ -107,11 +107,13 @@ int main(int argc, char * argv[]) {
         if(msgsnd(msgidS, &communicat, MSGMAX, MSG_NOERROR) == -1) {
           endWithError(-1);
         }
+        break;
       case 'E' :
         communicat.mtype = END;
         if(msgsnd(msgidS, &communicat, MSGMAX, MSG_NOERROR) == -1) {
           endWithError(-1);
         }
+        break;
     }
     if(msgrcv(msgidC, &serverMsg, sizeof(serverMsg.mtext), GET_LATEST, MSG_NOERROR) == -1) {
       endWithError(-1);
