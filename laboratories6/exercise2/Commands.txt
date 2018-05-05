@@ -1,0 +1,7 @@
+MIRROR Ziggy plays guitar
+CALC 2+2
+CALC 4-1
+MIRROR Mikhail Tal
+MIRROR Mikhail Tal
+TIME
+TIME
