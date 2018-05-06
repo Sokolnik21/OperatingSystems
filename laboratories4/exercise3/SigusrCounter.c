@@ -20,19 +20,17 @@ int mainReceivedSigusr = 0;
 static int * chldPid;
 static int * chldReceivedSigusr;
 
-int * createArray(int number) {
-  int * result = malloc(number * (sizeof(int)));
-  return result;
-}
-
 /**
   Signal handlers
  */
 /* Handlers for main */
 void mainSigusr1(int signum);
+void mainSigint(int signum);
 /* Handlers for child */
 void chldSigusr1(int signum);
 void chldSigusr2(int signum);
+void chldSigRT1(int signum);
+void chldSigRT2(int signum);
 
 int main(int argc, char * argv[]) {
   /**
@@ -40,6 +38,7 @@ int main(int argc, char * argv[]) {
    */
   /* Handle main SIGUSR */
   signal(SIGUSR1, mainSigusr1);
+  signal(SIGINT, mainSigint);
 
   /* Variables */
   int signalQuantity;
@@ -61,9 +60,12 @@ int main(int argc, char * argv[]) {
   /* Child pid */
   if(getpid() != mainPid) {
     * chldPid = getpid();
+    signal(SIGINT, SIG_IGN);
     /* Handle chld SIGUSR */
     signal(SIGUSR1, chldSigusr1);
     signal(SIGUSR2, chldSigusr2);
+    signal(SIGRTMIN + 1, chldSigRT1);
+    signal(SIGRTMIN + 2, chldSigRT2);
 
     while(TRUE)
       sleep(1);
@@ -92,6 +94,12 @@ int main(int argc, char * argv[]) {
           sleep(1);
         kill(* chldPid, SIGUSR2);
         break;
+      case 3 :
+        for(iterSignal = 0; iterSignal < signalQuantity; iterSignal++) {
+          kill(* chldPid, SIGRTMIN + 1);
+        }
+        kill(* chldPid, SIGRTMIN + 2);
+        break;
     }
 
     /* Print values */
@@ -111,11 +119,23 @@ void mainSigusr1(int signum) {
   letContinue = TRUE;
   mainReceivedSigusr++;
 }
+void mainSigint(int signum) {
+  kill(* chldPid, SIGUSR2);
+  printf("Exit via CTRL + C\n");
+  exit(1);
+}
 /* Handlers for child */
 void chldSigusr1(int signum) {
   * chldReceivedSigusr = * chldReceivedSigusr + 1;
   kill(mainPid, SIGUSR1);
 }
 void chldSigusr2(int signum) {
+  kill(* chldPid, SIGKILL);
+}
+void chldSigRT1(int signum) {
+  * chldReceivedSigusr = * chldReceivedSigusr + 1;
+  kill(mainPid, SIGUSR1);
+}
+void chldSigRT2(int signum) {
   kill(* chldPid, SIGKILL);
 }
