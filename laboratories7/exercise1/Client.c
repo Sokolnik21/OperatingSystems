@@ -13,7 +13,11 @@
 
 #include "Structures.h"
 
+fifo * QUEUE;
 int * BARBER_SEAT;
+int * CURR_SEAT;
+int * WAITING_CLIENTS;
+int * SEATS_SHM;
 
 void printTime(struct timespec timeCurr, struct timespec timeBegin);
 void printClientCommunicat(struct timespec timeBegin, typeOfClientOperation op);
@@ -31,6 +35,16 @@ void clientLeaveBarberWithoutShave(struct timespec timeBegin, int semid);
 void endWithError(int n);
 void endWithTextError(char * txt, int n);
 
+void DBG_printQueue(fifo * QUEUE) {
+  printf("///////QUEUE///////\n");
+  printf("| ");
+  int i;
+  for(i = 0; i < * SEATS_SHM; i++) {
+      printf("%d |\n", QUEUE[i].id);
+  }
+  printf("///////////////////\n");
+}
+
 int main(int argc, char * argv[]) {
   if(argc != 3)
     endWithTextError("Wrong amount of arguments", -1);
@@ -38,13 +52,12 @@ int main(int argc, char * argv[]) {
   /* Variables */
   struct timespec timeBegin;
   struct timespec * timeBeginShM;
-  fifo * QUEUE;
-  int * CURR_SEAT;
+  int * BARBER_SLEEP;
   int SEATS;
-  int WAITING_CLIENTS;
   int shmid;
   int semid;
-  int cpid;
+  // int mpid = getpid();
+  // int DBG_cpid;
   int clients;
   int barberQuan;
 
@@ -74,44 +87,42 @@ int main(int argc, char * argv[]) {
   if((shmid = shmget(key + 4, 0, 0)) == -1)
     endWithError(-1);
   BARBER_SEAT = shmat(shmid, NULL, 0);
+  if((shmid = shmget(key + 5, 0, 0)) == -1)
+    endWithError(-1);
+  WAITING_CLIENTS = shmat(shmid, NULL, 0);
+  if((shmid = shmget(key + 6, 0, 0)) == -1)
+    endWithError(-1);
+  SEATS_SHM = shmat(shmid, NULL, 0);
+  if((shmid = shmget(key + 7, 0, 0)) == -1)
+    endWithError(-1);
+  BARBER_SLEEP = shmat(shmid, NULL, 0);
 
   /* Get semaphore */
   semid = semget(key + 3, 0, 0);
-  printf("%d\n", semid);
 
-  // 1. Barber.sleep
-  clientWakeUpBarber(timeBegin, semid);
-  clientTakeSeatToShave(timeBegin, semid);
-  clientLeaveBarberAfterShave(timeBegin, semid);
-  // 2. Barber.works
-  // if(SEATS == WAITING_CLIENTS)
-  //   clientLeaveBarberWithoutShave(timeBegin, semid);
-  // else
-  //   clientTakeSeatInQueue(timeBegin, semid);
-
-
-  // sb.sem_num = INVITE;
-  // sb.sem_op = -1;
-  // sb.sem_flg = 0;
-  //
-  // if(semop(semid, &sb, 1) == -1)
-  //   endWithError(-1);
-
-  /* main loop */
-  // while(clients-- > 0) {
-  //   /* child */
-  //   if(fork() == 0) {
-  //     printf("Hi\n");
-  //     exit(0);
-  //   }
-  // //   if(firstElem -> id == 0) {
-  // //     // Barber.sleep();
-  // //     printf("null\n");
-  // //   }
-  // //   else {
-  // //     // Barber.getOldestClient(queue);
-  // //   }
-  // }
+  while(--clients >= 0) {
+    if(fork() == 0) {
+      while(--barberQuan >= 0) {
+        // if(* BARBER_SLEEP == true) {
+        if(* BARBER_SLEEP == true) {
+          clientWakeUpBarber(timeBegin, semid);
+          clientTakeSeatToShave(timeBegin, semid);
+          clientLeaveBarberAfterShave(timeBegin, semid);
+        }
+        else {
+          if(* WAITING_CLIENTS == * SEATS_SHM) {
+            clientLeaveBarberWithoutShave(timeBegin, semid);
+          }
+          else {
+            clientTakeSeatInQueue(timeBegin, semid);
+            clientWakeUpBarber(timeBegin, semid);
+            clientTakeSeatToShave(timeBegin, semid);
+            clientLeaveBarberAfterShave(timeBegin, semid);
+          }
+        }
+      }
+    }
+  }
 }
 
 
@@ -176,6 +187,7 @@ void waitForSemaphoreFlag(semaphoreFlags flag, int semid) {
 }
 
 void clientWakeUpBarber(struct timespec timeBegin, int semid) {
+  lockSemaphoreFlag(BC_MANEUVER, semid);
   printClientCommunicat(timeBegin, OP_WAKE_UP_BARBER);
   unlockSemaphoreFlag(SLEEP, semid);
   unlockSemaphoreFlag(SLEEP, semid);
@@ -192,12 +204,23 @@ void clientTakeSeatToShave(struct timespec timeBegin, int semid) {
 
 void clientLeaveBarberAfterShave(struct timespec timeBegin, int semid) {
   printClientCommunicat(timeBegin, OP_LEAVE_AFTER_SHAVE);
+  unlockSemaphoreFlag(BC_MANEUVER, semid);
   unlockSemaphoreFlag(FINISH, semid);
   unlockSemaphoreFlag(FINISH, semid);
 }
 
 void clientTakeSeatInQueue(struct timespec timeBegin, int semid) {
+  lockSemaphoreFlag(CQ_MANEUVER, semid);
+  if(* WAITING_CLIENTS == * SEATS_SHM) {
+    clientLeaveBarberWithoutShave(timeBegin, semid);
+    return;
+  }
   printClientCommunicat(timeBegin, OP_TAKE_SEAT_IN_QUEUE);
+  int index = (* CURR_SEAT + * WAITING_CLIENTS) % * SEATS_SHM;
+  QUEUE[index].id = getpid();
+  * WAITING_CLIENTS = * WAITING_CLIENTS + 1;
+  printf("%d\n", * WAITING_CLIENTS);
+  unlockSemaphoreFlag(CQ_MANEUVER, semid);
 }
 
 void clientLeaveBarberWithoutShave(struct timespec timeBegin, int semid) {

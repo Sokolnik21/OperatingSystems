@@ -2,13 +2,13 @@ cbarber:
 	gcc Barber.c -o Barber.out
 
 barber:
-	./Barber.out 7
+	./Barber.out 5
 
 cclient:
 	gcc Client.c -o Client.out
 
 client:
-	./Client.out 2 3
+	./Client.out 25 1
 
 remove:
 	rm *.out

@@ -28,10 +28,20 @@
 #include <sys/shm.h>
 #include <stdbool.h>
 #include <time.h>
+#include <signal.h>
 
 #include "Structures.h"
 
 int * BARBER_SEAT;
+int * BARBER_SLEEP;
+struct timespec * timeBeginShM;
+fifo * QUEUE;
+int * CURR_SEAT;
+int * WAITING_CLIENTS;
+int * SEATS_SHM;
+
+void agentSIG_C(int signum);
+void clearSemaphoresAndSharedMemory();
 
 void printTime(struct timespec timeCurr, struct timespec timeBegin);
 void printBarberCommunicat(struct timespec timeBegin, typeOfBarberOperation op);
@@ -39,6 +49,7 @@ void printBarberCommunicat(struct timespec timeBegin, typeOfBarberOperation op);
 void lockSemaphoreFlag(semaphoreFlags flag, int semid);
 void unlockSemaphoreFlag(semaphoreFlags flag, int semid);
 void waitForSemaphoreFlag(semaphoreFlags flag, int semid);
+void tryToLockSemaphoreFlag(semaphoreFlags flag, int semid);
 
 void barberSleep(struct timespec timeBegin, int semid);
 void barberWakeUp(struct timespec timeBegin, int semid);
@@ -49,19 +60,28 @@ void barberEndShave(struct timespec timeBegin, int semid);
 void endWithError(int n);
 void endWithTextError(char * txt, int n);
 
+void DBG_printQueue(fifo * QUEUE) {
+  printf("///////QUEUE///////\n");
+  printf("| ");
+  int i;
+  for(i = 0; i < * SEATS_SHM; i++) {
+      printf("%d |\n", QUEUE[i].id);
+  }
+  printf("///////////////////\n");
+}
+
 int main(int argc, char * argv[]) {
   if(argc != 2)
     endWithTextError("Wrong amount of arguments", -1);
 
   /* Variables */
   struct timespec timeBegin;
-  struct timespec * timeBeginShM;
-  fifo * QUEUE;
-  int * CURR_SEAT;
   int SEATS;
-  int WAITING_CLIENTS;
   int shmid;
   int semid;
+
+  /* Signal handler */
+  signal(SIGINT, agentSIG_C);
 
   clock_gettime(CLOCK_MONOTONIC, &timeBegin);
   SEATS = atoi(argv[1]);
@@ -89,6 +109,15 @@ int main(int argc, char * argv[]) {
   if((shmid = shmget(key + 4, sizeof(int), 0600 | IPC_CREAT)) == -1)
     endWithError(-1);
   BARBER_SEAT = shmat(shmid, NULL, 0);
+  if((shmid = shmget(key + 5, sizeof(int), 0600 | IPC_CREAT)) == -1)
+    endWithError(-1);
+  WAITING_CLIENTS = shmat(shmid, NULL, 0);
+  if((shmid = shmget(key + 6, sizeof(int), 0600 | IPC_CREAT)) == -1)
+    endWithError(-1);
+  SEATS_SHM = shmat(shmid, NULL, 0);
+  if((shmid = shmget(key + 7, sizeof(int), 0600 | IPC_CREAT)) == -1)
+    endWithError(-1);
+  BARBER_SLEEP = shmat(shmid, NULL, 0);
 
   /* Initialize shared memory segments */
   int iterQue;
@@ -98,10 +127,13 @@ int main(int argc, char * argv[]) {
   }
   * CURR_SEAT = 0;
   * timeBeginShM = timeBegin;
+  * WAITING_CLIENTS = 0;
+  * SEATS_SHM = SEATS;
+  * BARBER_SLEEP = false;
 
   /* Create semaphore */
   semid = semget(key + 3, SEMAPHORE_FLAGS, 0600 | IPC_CREAT);
-  printf("%d\n", semid);
+
   /* Initialize semaphore */
   int iterSem;
   for(iterSem = 0; iterSem < SEMAPHORE_FLAGS; iterSem++)
@@ -109,14 +141,35 @@ int main(int argc, char * argv[]) {
       endWithError(-1);
 
   /* Barber sleep */
-  // 1. QUEUE == empty
-  barberSleep(timeBegin, semid);
-  barberWakeUp(timeBegin, semid);
-  barberInvite(timeBegin, semid);
-  barberBeginShave(timeBegin, semid);
-  barberEndShave(timeBegin, semid);
+  while(true) {
+    DBG_printQueue(QUEUE);
+    switch(* WAITING_CLIENTS) {
+      case 0 :
+        // if(tryToLockSemaphoreFlag(BC_MANEUVER, semid) != -1) {
+          barberSleep(timeBegin, semid);
+          barberWakeUp(timeBegin, semid);
+        // }
+      default :
+        barberInvite(timeBegin, semid);
+        barberBeginShave(timeBegin, semid);
+        barberEndShave(timeBegin, semid);
+    }
+  }
 
-  sleep(1);
+  clearSemaphoresAndSharedMemory();
+}
+
+void clearSemaphoresAndSharedMemory() {
+  /* Create queue */
+  /* Variables */
+  key_t key;
+  int semid;
+  int shmid;
+  /* Set key generator seed */
+  char * pathName = malloc(PATH_MAX * sizeof(char));
+  pathName = getcwd(pathName, PATH_MAX);
+  if((key = ftok(pathName, PROJ_NAME)) == -1)
+  endWithError(-1);
 
   /* Clear section */
   /* Clear shared memory */
@@ -124,6 +177,9 @@ int main(int argc, char * argv[]) {
   shmdt(CURR_SEAT);
   shmdt(timeBeginShM);
   shmdt(BARBER_SEAT);
+  shmdt(WAITING_CLIENTS);
+  shmdt(SEATS_SHM);
+  shmdt(BARBER_SLEEP);
   shmid = shmget(key, 0, 0600);
   shmctl(shmid, IPC_RMID, NULL);
   shmid = shmget(key + 1, 0, 0600);
@@ -132,9 +188,20 @@ int main(int argc, char * argv[]) {
   shmctl(shmid, IPC_RMID, NULL);
   shmid = shmget(key + 4, 0, 0600);
   shmctl(shmid, IPC_RMID, NULL);
+  shmid = shmget(key + 5, 0, 0600);
+  shmctl(shmid, IPC_RMID, NULL);
+  shmid = shmget(key + 6, 0, 0600);
+  shmctl(shmid, IPC_RMID, NULL);
+  shmid = shmget(key + 7, 0, 0600);
+  shmctl(shmid, IPC_RMID, NULL);
   /* Clear semaphores */
+  semid = semget(key + 3, 0, 0);
   semctl(semid, key + 3, IPC_RMID, NULL);
+}
 
+void agentSIG_C(int signum) {
+  clearSemaphoresAndSharedMemory();
+  exit(0);
 }
 
 void printTime(struct timespec timeCurr, struct timespec timeBegin) {
@@ -197,14 +264,28 @@ void waitForSemaphoreFlag(semaphoreFlags flag, int semid) {
     endWithError(-1);
 }
 
+void tryToLockSemaphoreFlag(semaphoreFlags flag, int semid) {
+  struct sembuf sb;
+  sb.sem_num = flag;
+  sb.sem_op = -1;
+  sb.sem_flg = IPC_NOWAIT;
+
+  if(semop(semid, &sb, 1) == -1)
+    endWithError(-1);
+}
+
 void barberSleep(struct timespec timeBegin, int semid) {
+  // lockSemaphoreFlag(BC_MANEUVER, semid);
   printBarberCommunicat(timeBegin, OP_SLEEP);
+  * BARBER_SLEEP = true;
   lockSemaphoreFlag(SLEEP, semid);
+  // unlockSemaphoreFlag(BC_MANEUVER, semid);
   lockSemaphoreFlag(SLEEP, semid);
 }
 
 void barberWakeUp(struct timespec timeBegin, int semid) {
   printBarberCommunicat(timeBegin, OP_WAKE_UP);
+  * BARBER_SLEEP = false;
 }
 
 void barberInvite(struct timespec timeBegin, int semid) {
