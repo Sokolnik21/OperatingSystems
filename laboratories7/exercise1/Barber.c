@@ -49,7 +49,7 @@ void printBarberCommunicat(struct timespec timeBegin, typeOfBarberOperation op);
 void lockSemaphoreFlag(semaphoreFlags flag, int semid);
 void unlockSemaphoreFlag(semaphoreFlags flag, int semid);
 void waitForSemaphoreFlag(semaphoreFlags flag, int semid);
-void tryToLockSemaphoreFlag(semaphoreFlags flag, int semid);
+int tryToLockSemaphoreFlag(semaphoreFlags flag, int semid);
 
 void barberSleep(struct timespec timeBegin, int semid);
 void barberWakeUp(struct timespec timeBegin, int semid);
@@ -65,8 +65,9 @@ void DBG_printQueue(fifo * QUEUE) {
   printf("| ");
   int i;
   for(i = 0; i < * SEATS_SHM; i++) {
-      printf("%d |\n", QUEUE[i].id);
+      printf("%d | ", QUEUE[i].id);
   }
+  printf("\n");
   printf("///////////////////\n");
 }
 
@@ -129,30 +130,64 @@ int main(int argc, char * argv[]) {
   * timeBeginShM = timeBegin;
   * WAITING_CLIENTS = 0;
   * SEATS_SHM = SEATS;
+  // * BARBER_SLEEP = true;
   * BARBER_SLEEP = false;
 
   /* Create semaphore */
   semid = semget(key + 3, SEMAPHORE_FLAGS, 0600 | IPC_CREAT);
 
   /* Initialize semaphore */
-  int iterSem;
-  for(iterSem = 0; iterSem < SEMAPHORE_FLAGS; iterSem++)
-    if(semctl(semid, iterSem, SETVAL, 1) == -1)
-      endWithError(-1);
+  if(semctl(semid, INVITE, SETVAL, 0) == -1)
+    endWithError(-1);
+  if(semctl(semid, FINISH, SETVAL, 0) == -1)
+    endWithError(-1);
+  if(semctl(semid, SLEEP, SETVAL, 0) == -1)
+    endWithError(-1);
+  if(semctl(semid, LEAVE, SETVAL, 0) == -1)
+    endWithError(-1);
+  if(semctl(semid, TAKEN_SEAT, SETVAL, 0) == -1)
+    endWithError(-1);
+  if(semctl(semid, ACCESS_TO_BARBER_SLEEP, SETVAL, 1) == -1)
+    endWithError(-1);
+  if(semctl(semid, ACCESS_TO_WAITING_CLIENTS, SETVAL, 1) == -1)
+    endWithError(-1);
 
   /* Barber sleep */
   while(true) {
     DBG_printQueue(QUEUE);
-    switch(* WAITING_CLIENTS) {
-      case 0 :
-        // if(tryToLockSemaphoreFlag(BC_MANEUVER, semid) != -1) {
-          barberSleep(timeBegin, semid);
-          barberWakeUp(timeBegin, semid);
-        // }
-      default :
-        barberInvite(timeBegin, semid);
-        barberBeginShave(timeBegin, semid);
-        barberEndShave(timeBegin, semid);
+    lockSemaphoreFlag(ACCESS_TO_WAITING_CLIENTS, semid);
+    printf("lockBarber\n");
+    if(* WAITING_CLIENTS == 0) {
+      printf("A\n");
+      // A
+      lockSemaphoreFlag(ACCESS_TO_BARBER_SLEEP, semid);
+      barberSleep(timeBegin, semid);
+      unlockSemaphoreFlag(ACCESS_TO_BARBER_SLEEP, semid);
+      unlockSemaphoreFlag(ACCESS_TO_WAITING_CLIENTS, semid);
+      // wait for client action
+      lockSemaphoreFlag(SLEEP, semid);
+      barberBeginShave(timeBegin, semid);
+      barberEndShave(timeBegin, semid);
+      // let client continue
+      unlockSemaphoreFlag(FINISH, semid);
+      // wait for client action
+      lockSemaphoreFlag(LEAVE, semid);
+    }
+    else {
+      printf("B\n");
+      // B
+      barberInvite(timeBegin, semid);
+      unlockSemaphoreFlag(ACCESS_TO_WAITING_CLIENTS, semid);
+      // let client continue
+      unlockSemaphoreFlag(INVITE, semid);
+      // wait for client action
+      lockSemaphoreFlag(TAKEN_SEAT, semid);
+      barberBeginShave(timeBegin, semid);
+      barberEndShave(timeBegin, semid);
+      // let client continue
+      unlockSemaphoreFlag(FINISH, semid);
+      // wait for client action
+      lockSemaphoreFlag(LEAVE, semid);
     }
   }
 
@@ -222,7 +257,7 @@ void printBarberCommunicat(struct timespec timeBegin, typeOfBarberOperation op) 
       printf("Barber.wakeUp : ");
       break;
     case OP_INVITE :
-      printf("Barber.inviteClient : ");
+      printf("Barber.inviteClient(%d) : ", QUEUE[* CURR_SEAT].id);
       break;
     case OP_BEGIN_SHAVE :
       printf("Barber.beginShave(%d) : ", * BARBER_SEAT);
@@ -264,23 +299,22 @@ void waitForSemaphoreFlag(semaphoreFlags flag, int semid) {
     endWithError(-1);
 }
 
-void tryToLockSemaphoreFlag(semaphoreFlags flag, int semid) {
+int tryToLockSemaphoreFlag(semaphoreFlags flag, int semid) {
+  int result;
+
   struct sembuf sb;
   sb.sem_num = flag;
   sb.sem_op = -1;
   sb.sem_flg = IPC_NOWAIT;
 
-  if(semop(semid, &sb, 1) == -1)
-    endWithError(-1);
+  result = semop(semid, &sb, 1);
+  printf("%d\n", result);
+  return result;
 }
 
 void barberSleep(struct timespec timeBegin, int semid) {
-  // lockSemaphoreFlag(BC_MANEUVER, semid);
   printBarberCommunicat(timeBegin, OP_SLEEP);
   * BARBER_SLEEP = true;
-  lockSemaphoreFlag(SLEEP, semid);
-  // unlockSemaphoreFlag(BC_MANEUVER, semid);
-  lockSemaphoreFlag(SLEEP, semid);
 }
 
 void barberWakeUp(struct timespec timeBegin, int semid) {
@@ -288,10 +322,12 @@ void barberWakeUp(struct timespec timeBegin, int semid) {
   * BARBER_SLEEP = false;
 }
 
+// uses WAITING_CLIENTS
 void barberInvite(struct timespec timeBegin, int semid) {
   printBarberCommunicat(timeBegin, OP_INVITE);
-  lockSemaphoreFlag(INVITE, semid);
-  lockSemaphoreFlag(INVITE, semid);
+  * WAITING_CLIENTS = * WAITING_CLIENTS - 1;
+  QUEUE[* CURR_SEAT].id = 0;
+  * CURR_SEAT = (* CURR_SEAT + 1) % * SEATS_SHM;
 }
 
 void barberBeginShave(struct timespec timeBegin, int semid) {
@@ -300,8 +336,6 @@ void barberBeginShave(struct timespec timeBegin, int semid) {
 
 void barberEndShave(struct timespec timeBegin, int semid) {
   printBarberCommunicat(timeBegin, OP_END_SHAVE);
-  lockSemaphoreFlag(FINISH, semid);
-  lockSemaphoreFlag(FINISH, semid);
 }
 
 void endWithError(int n) {

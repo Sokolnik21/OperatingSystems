@@ -2,7 +2,7 @@
 #define STRUCTURES_H
 
 #define PROJ_NAME 'M'
-#define SEMAPHORE_FLAGS 5
+#define SEMAPHORE_FLAGS 7
 // http://www.cplusplus.com/forum/unices/23437/
 
 typedef struct fifo fifo;
@@ -15,8 +15,10 @@ typedef enum {
   INVITE = 0,
   FINISH = 1,
   SLEEP = 2,
-  BC_MANEUVER = 3,
-  CQ_MANEUVER = 4
+  LEAVE = 3,
+  TAKEN_SEAT = 4,
+  ACCESS_TO_BARBER_SLEEP = 5,
+  ACCESS_TO_WAITING_CLIENTS = 6
   }
 semaphoreFlags;
 
