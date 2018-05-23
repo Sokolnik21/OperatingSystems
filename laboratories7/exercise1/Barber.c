@@ -160,9 +160,9 @@ int main(int argc, char * argv[]) {
     if(* WAITING_CLIENTS == 0) {
       printf("A\n");
       // A
-      lockSemaphoreFlag(ACCESS_TO_BARBER_SLEEP, semid);
+      // lockSemaphoreFlag(ACCESS_TO_BARBER_SLEEP, semid);
       barberSleep(timeBegin, semid);
-      unlockSemaphoreFlag(ACCESS_TO_BARBER_SLEEP, semid);
+      // unlockSemaphoreFlag(ACCESS_TO_BARBER_SLEEP, semid);
       unlockSemaphoreFlag(ACCESS_TO_WAITING_CLIENTS, semid);
       // wait for client action
       lockSemaphoreFlag(SLEEP, semid);
