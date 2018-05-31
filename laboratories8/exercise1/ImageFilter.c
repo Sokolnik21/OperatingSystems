@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 struct image {
   int row;
@@ -16,6 +17,24 @@ struct filter {
   int side;
   double ** matrix;
 };
+
+int max(int a, int b) {
+  int result;
+  if(a > b)
+    result = a;
+  else
+    result = b;
+  return result;
+}
+
+int min(int a, int b) {
+  int result;
+  if(a < b)
+    result = a;
+  else
+    result = b;
+  return result;
+}
 
 void parseImageSize(int * cols, int * rows, char * line);
 void parseImagePixels(int ** baseImage, int cols, int rows, int * currIndex, char * line);
@@ -34,6 +53,8 @@ void DBG_printFilter(struct filter ftr);
 struct image prepareOutputImage(struct image base);
 void updateOutputImage(struct image output, int row, int col, struct image base, struct filter ftr);
 
+void saveOutputImage(struct image output, char * outputImageName);
+
 int main(int argc, char * argv[]) {
   if(argc != 5)
     endWithTextError("Wrong amount of arguments", -1);
@@ -44,13 +65,15 @@ int main(int argc, char * argv[]) {
   struct image * output;
   char * baseImageName;
   char * filterName;
-  char * outputImageName = "FilteredImage.ascii.pgm";
+  char * outputImageName;
 
   /* Parsing varialbes */
   baseImageName = malloc(strlen(argv[2]) * sizeof(char));
   strcpy(baseImageName, argv[2]);
   filterName = malloc(strlen(argv[3]) * sizeof(char));
   strcpy(filterName, argv[3]);
+  outputImageName = malloc(strlen(argv[4]) * sizeof(char));
+  strcpy(outputImageName, argv[4]);
 
   /* Filling images and filters */
   base = malloc(sizeof(struct image));
@@ -70,13 +93,49 @@ int main(int argc, char * argv[]) {
     for(j = 0; j < output -> col ; j++)
       updateOutputImage(* output, i, j, * base, * ftr);
 
-  DBG_printImage(* output);
+  // DBG_printImage(* output);
+
+  saveOutputImage(* output, outputImageName);
+
 
   return 0;
 }
 
+void saveOutputImage(struct image output, char * outputImageName) {
+  // printf("saving time\n");
+  FILE * f = fopen(outputImageName, "w");
+  fprintf(f, "P2\n");
+  fprintf(f, "%d %d\n", output.col, output.row);
+  fprintf(f, "%d\n", output.depth);
+  int i, j;
+  for(i = 0; i < output.row ; i++) {
+    for(j = 0; j < output.col ; j++)
+      fprintf(f, "%d ", output.matrix[i][j]);
+      fprintf(f, "\n");
+  }
+  fclose(f);
+}
+
 void updateOutputImage(struct image output, int row, int col, struct image base, struct filter ftr) {
-  output.matrix[row][col] = base.matrix[row][col];
+  /**
+    . . . .
+    . C . .   . . .
+    . . . .   . C .
+    . . . . , . . .
+   */
+  int ftrCenter = (ftr.side - 1) / 2;
+  // printf("ftrCenter %d\n", ftrCenter);
+
+  double result = 0;
+  int i, j;
+  for(i = 0; i < ftr.side; i++)
+    for(j = 0; j < ftr.side; j++) {
+      // printf("Parameters: %d, %d\n", min(base.row - 1, max(0, row - ftrCenter + i)), min(base.col - 1, max(0, col - ftrCenter + j)));
+      // printf("Value: %d\n", base.matrix[min(base.row - 1, max(0, row - ftrCenter + i))][min(base.col - 1, max(0, col - ftrCenter + j))]);
+      // printf("Filter: %f\n", ftr.matrix[i][j]);
+      result += (base.matrix[min(base.row - 1, max(0, row - ftrCenter + i))][min(base.col - 1, max(0, col - ftrCenter + j))] * ftr.matrix[i][j]);
+    }
+  output.matrix[row][col] = (int)round(result);
 }
 
 struct image prepareOutputImage(struct image base) {

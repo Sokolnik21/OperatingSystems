@@ -8,7 +8,7 @@ run8:
 	./GenerateFilter.out 3 8
 
 run32:
-	./GenerateFilter.out 3 32
+	./GenerateFilter.out 50 32
 
 run1024:
 	./GenerateFilter.out 3 1024
