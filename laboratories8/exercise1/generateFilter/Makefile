@@ -11,4 +11,4 @@ run32:
 	./GenerateFilter.out 50 32
 
 run1024:
-	./GenerateFilter.out 3 1024
+	./GenerateFilter.out 50 1024

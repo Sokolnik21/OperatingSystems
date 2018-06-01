@@ -1,6 +1,16 @@
 compile:
-	gcc ImageFilter.c -o ImageFilter.out -lm
+	gcc ImageFilter.c -o ImageFilter.out -lm -lpthread
 
 run:
-	# ./ImageFilter.out 1 exampleImages/feep.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm
-	./ImageFilter.out 1 exampleImages/lena.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm
+	./ImageFilter.out 8 exampleImages/casablanca.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm
+
+times:
+	touch Times.txt
+	echo "This file contains data from ImageFilter program" > Times.txt
+	./ImageFilter.out 1 exampleImages/casablanca.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm >> Times.txt
+	echo " " >> Times.txt
+	./ImageFilter.out 2 exampleImages/casablanca.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm >> Times.txt
+	echo " " >> Times.txt
+	./ImageFilter.out 4 exampleImages/casablanca.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm >> Times.txt
+	echo " " >> Times.txt
+	./ImageFilter.out 8 exampleImages/casablanca.ascii.pgm generateFilter/RAND.filter outputImage/FilteredImage.ascii.pgm >> Times.txt

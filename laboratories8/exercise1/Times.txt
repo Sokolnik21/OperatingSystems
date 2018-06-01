@@ -1,0 +1,28 @@
+This file contains data from ImageFilter program
+Measurement
+	Threads: 1
+	Base image size: 460x360
+	Filter size: 50x50
+Time
+	6.159528
+ 
+Measurement
+	Threads: 2
+	Base image size: 460x360
+	Filter size: 50x50
+Time
+	3.084827
+ 
+Measurement
+	Threads: 4
+	Base image size: 460x360
+	Filter size: 50x50
+Time
+	2.924935
+ 
+Measurement
+	Threads: 8
+	Base image size: 460x360
+	Filter size: 50x50
+Time
+	2.941101
