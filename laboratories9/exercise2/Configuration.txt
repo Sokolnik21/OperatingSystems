@@ -1,0 +1,16 @@
+# This file contains options used in ProducerConsumer program
+# lines that starts with "#" are omitted in parser
+
+# specification
+producerQuan: 121
+clientQuan: 3
+bufferSize: 32
+fileToRead: exampleFile/PanTadeusz.txt
+differentiateNumber: 44
+differentiateType: equal
+displayType: silence
+endCondition: 0
+
+# specification special options
+# differentiateType = { equal, higher, lower }
+# displayType = { silent, verbose }
