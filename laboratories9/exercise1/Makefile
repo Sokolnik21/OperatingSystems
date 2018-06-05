@@ -6,3 +6,6 @@ run:
 
 dbg:
 	valgrind ./ProducerConsumer.out Configuration.txt
+
+remove:
+	rm *.out

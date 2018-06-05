@@ -25,6 +25,7 @@ struct specification {
   int differentiateNumber;
   enum differentiateType diffType;
   enum displayType disType;
+  int endCondition;
 };
 
 struct buffer {
@@ -60,6 +61,8 @@ void endWithError(int n);
 void endWithTextError(char * txt, int n);
 
 pthread_mutex_t q_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t q_full = PTHREAD_COND_INITIALIZER;
+pthread_cond_t q_empty = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char * argv[]) {
   if(argc != 2)
@@ -88,26 +91,24 @@ int main(int argc, char * argv[]) {
     threadClie[i].spec = &spec;
     threadClie[i].prod = &prod;
   }
-  for(i = 0; i < spec.producerQuan; i++) {
+  for(i = 0; i < spec.clientQuan; i++) {
     if(pthread_create(&threadClie[i].threadId, NULL, &threadClient, &threadClie[i]) != 0)
       endWithError(-1);
   }
 
-  /* Wait for threads to end */
   void * res;
-  for(i = 0; i < spec.producerQuan; i++) {
-    if(pthread_join(threadProd[i].threadId, &res) != 0)
-      endWithError(-1);
+  switch(spec.endCondition) {
+    case 0 :
+      /* Wait for threads to end */
+      for(i = 0; i < spec.producerQuan; i++) {
+        if(pthread_join(threadProd[i].threadId, &res) != 0)
+        endWithError(-1);
+      }
+      break;
+    default :
+      sleep(spec.endCondition);
+      break;
   }
-
-
-  while(1) {
-    sleep(1);
-    // DBG_printBuffer(prod);
-    // producerMethod(tinfo -> prod, * tinfo -> spec);
-    // clientMethod(&prod, spec);
-  }
-
 
   return 0;
 }
@@ -163,6 +164,11 @@ struct specification parseSpecification(char * fileName) {
       if(!(tmp[0] == 's' || tmp[0] == 'v'))
         endWithTextError("Wrong displayType argument in Configuration.txt", -2);
       spec.disType = tmp[0];
+      continue;
+    }
+    if(strcmp(tmp, "endCondition:") == 0) {
+      tmp = strtok(NULL, " ");
+      spec.endCondition = atoi(tmp);
       continue;
     }
   }
@@ -224,12 +230,10 @@ void producerMethod(struct buffer * prod, struct specification spec) {
   while ((read = getline(&line, &len, f)) != -1) {
     pthread_mutex_lock(&q_mutex);
     while(bufferIsFull(* prod)) {
-      pthread_mutex_unlock(&q_mutex);
-      // printf("Producer wait\n");
-      // sleep(1);
-      pthread_mutex_lock(&q_mutex);
+      pthread_cond_wait(&q_full, &q_mutex);
     }
     bufferAdd(prod, line);
+    pthread_cond_broadcast(&q_empty);
     int buffIndex = (prod -> currProd + prod -> prodQuan) % prod -> MAX_PROD;
     switch(spec.disType) {
       case silent :
@@ -250,12 +254,10 @@ void clientMethod(struct buffer * prod, struct specification spec) {
   while (1) {
     pthread_mutex_lock(&q_mutex);
     while(bufferIsEmpty(* prod)) {
-      pthread_mutex_unlock(&q_mutex);
-      // printf("Client wait\n");
-      // sleep(1);
-      pthread_mutex_lock(&q_mutex);
+      pthread_cond_wait(&q_empty, &q_mutex);
     }
     item = bufferRemove(prod);
+    pthread_cond_broadcast(&q_full);
     diff = spec.differentiateNumber - strlen(item);
     switch(spec.diffType) {
       case equal :
